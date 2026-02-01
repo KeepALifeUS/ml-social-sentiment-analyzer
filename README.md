@@ -1,62 +1,62 @@
 # Social Media Sentiment Analyzer for Crypto Markets
 
-Enterprise-grade социальный анализатор настроений для криптовалютных рынков с Context7 паттернами.
+Enterprise-grade social sentiment analyzer for cryptocurrency markets with enterprise patterns.
 
-## 🚀 Основные возможности
+## Key Features
 
-### 📱 Платформы
+### Platforms
 
-- **Twitter/X** - Streaming API v2, расширенный поиск, trend monitoring
-- **Reddit** - Crypto subreddits, комментарии, hot/new/rising posts
-- **Telegram** - Каналы и группы, real-time мониторинг
+- **Twitter/X** - Streaming API v2, advanced search, trend monitoring
+- **Reddit** - Crypto subreddits, comments, hot/new/rising posts
+- **Telegram** - Channels and groups, real-time monitoring
 - **Discord** - Bot integration, server monitoring
 - **YouTube** - Video comments, channel analysis, trending videos
 - **TikTok** - Hashtag tracking, viral content detection
 
-### 🧠 AI/ML Возможности
+### AI/ML Capabilities
 
-- **Real-time анализ** - >1000 сообщений/секунда
-- **Ensemble модели** - BERT, RoBERTa, FinBERT для максимальной точности
-- **Multilingual поддержка** - Анализ на множестве языков
-- **Crypto-specific настройки** - Веса для crypto-терминов
-- **Sarcasm/Meme детекция** - Продвинутый NLP анализ
-- **Sentiment aggregation** - Умная агрегация с различных платформ
+- **Real-time analysis** - >1000 messages/second
+- **Ensemble models** - BERT, RoBERTa, FinBERT for maximum accuracy
+- **Multilingual support** - Analysis in multiple languages
+- **Crypto-specific tuning** - Weights for crypto-terms
+- **Sarcasm/Meme detection** - Advanced NLP analysis
+- **Sentiment aggregation** - Smart aggregation from various platforms
 
-### 🏗️ Enterprise архитектура
+### Enterprise Architecture
 
-- **Context7 паттерны** - Cloud-native best practices
-- **Circuit breakers** - Защита от каскадных сбоев
+- **Enterprise patterns** - Cloud-native best practices
+- **Circuit breakers** - Protection from cascading failures
 - **Rate limiting** - Automatic backoff strategies
 - **Fault tolerance** - Graceful degradation
 - **Monitoring** - Prometheus metrics, distributed tracing
 - **Scalability** - Horizontal scaling, load balancing
 
-## 📦 Установка
+## Installation
 
-### Требования
+### Requirements
 
 - Python 3.10+
 - PostgreSQL 14+
 - Redis 6+
-- 8GB+ RAM (для ML моделей)
-- NVIDIA GPU (опционально, для ускорения)
+- 8GB+ RAM (for ML models)
+- NVIDIA GPU (optional, for acceleration)
 
 ### Quick Start
 
 ```bash
-# Клонирование и переход в директорию
+# Clone and navigate to directory
 cd packages/ml-social-sentiment-analyzer
 
-# Создание виртуального окружения
+# Create virtual environment
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
-# или
+# or
 venv\Scripts\activate  # Windows
 
-# Установка зависимостей
+# Install dependencies
 pip install -e .
 
-# Установка ML моделей
+# Install ML models
 python -c "
 import nltk
 nltk.download('punkt')
@@ -64,13 +64,12 @@ nltk.download('stopwords')
 nltk.download('vader_lexicon')
 "
 
-# Установка spaCy модели
+# Install spaCy model
 python -m spacy download en_core_web_sm
 
-# Переменные окружения (скопировать .env.example в .env)
+# Environment variables (copy .env.example to .env)
 cp .env.example .env
-# Настроить API ключи и подключения
-
+# Configure API keys and connections
 ```
 
 ### Docker Compose
@@ -110,12 +109,11 @@ services:
 volumes:
   postgres_data:
   redis_data:
-
 ```
 
-## ⚙️ Конфигурация
+## Configuration
 
-### Переменные окружения
+### Environment Variables
 
 ```bash
 # Database
@@ -154,7 +152,7 @@ DISCORD_BOT_TOKEN=your_bot_token
 # YouTube API
 YOUTUBE_API_KEY=your_api_key
 
-# TikTok API (если доступен)
+# TikTok API (if available)
 TIKTOK_ACCESS_TOKEN=your_access_token
 
 # ML Settings
@@ -177,23 +175,21 @@ RATE_LIMIT_WINDOW=3600
 PROMETHEUS_PORT=9090
 ENABLE_TRACING=true
 LOG_LEVEL=INFO
-
 ```
 
-## 🚀 Использование
+## Usage
 
 ### REST API
 
 ```bash
-# Запуск API сервера
+# Start API server
 python -m src.api.rest_api
 
-# Или через uvicorn
+# Or via uvicorn
 uvicorn src.api.rest_api:app --host 0.0.0.0 --port 8004 --reload
-
 ```
 
-### Анализ настроения
+### Sentiment Analysis
 
 ```python
 import asyncio
@@ -216,12 +212,11 @@ async def analyze_sentiment():
     print(f"Crypto symbols: {result.crypto_symbols}")
     print(f"Processing time: {result.processing_time_ms:.1f}ms")
 
-# Запуск
+# Run
 asyncio.run(analyze_sentiment())
-
 ```
 
-### Сбор данных из социальных сетей
+### Social Media Data Collection
 
 ```python
 import asyncio
@@ -234,7 +229,7 @@ async def collect_crypto_tweets():
 
     await twitter.connect()
 
-    # Поиск crypto твитов
+    # Search crypto tweets
     tweets = await twitter.search_recent_tweets(
         query="bitcoin OR ethereum OR crypto",
         max_results=100,
@@ -246,9 +241,8 @@ async def collect_crypto_tweets():
         print(f"Crypto symbols: {tweet['crypto_symbols']}")
         print("---")
 
-# Запуск
+# Run
 asyncio.run(collect_crypto_tweets())
-
 ```
 
 ### API Endpoints
@@ -257,28 +251,27 @@ asyncio.run(collect_crypto_tweets())
 # Health check
 curl http://localhost:8004/health
 
-# Анализ настроения
+# Sentiment analysis
 curl -X POST http://localhost:8004/sentiment/analyze \
   -H "Content-Type: application/json" \
   -d '{"text": "Ethereum is pumping hard! To the moon! 🚀", "platform": "twitter"}'
 
-# Batch анализ
+# Batch analysis
 curl -X POST http://localhost:8004/sentiment/analyze-batch \
   -H "Content-Type: application/json" \
   -d '{"texts": ["Bitcoin looks bullish", "Market is crashing", "HODL forever"]}'
 
-# Агрегированное настроение
+# Aggregated sentiment
 curl "http://localhost:8004/sentiment/aggregated?symbol=BTC&time_window_hours=24"
 
-# Трендовые темы
+# Trending topics
 curl "http://localhost:8004/trends/topics?platforms=twitter,reddit&limit=20"
 
-# Метрики Prometheus
+# Prometheus metrics
 curl http://localhost:8004/metrics/prometheus
-
 ```
 
-## 📊 Streaming анализ
+## Streaming Analysis
 
 ```python
 import asyncio
@@ -290,7 +283,7 @@ async def stream_sentiment():
 
     await stream_processor.initialize()
 
-    # Real-time анализ потока твитов
+    # Real-time tweet stream analysis
     async for sentiment_result in stream_processor.stream_crypto_sentiment():
         print(f"Real-time: {sentiment_result.sentiment} ({sentiment_result.confidence:.3f})")
         print(f"Text: {sentiment_result.text[:100]}...")
@@ -298,20 +291,18 @@ async def stream_sentiment():
         print("---")
 
 asyncio.run(stream_sentiment())
-
 ```
 
-## 🔍 Мониторинг
+## Monitoring
 
-### Prometheus метрики
+### Prometheus Metrics
 
 ```bash
-# Запуск Prometheus сервера
+# Start Prometheus server
 python -c "from src.monitoring.metrics_collector import start_prometheus_server; start_prometheus_server(9090)"
 
-# Доступ к метрикам
+# Access metrics
 curl http://localhost:9090/metrics
-
 ```
 
 ### Grafana Dashboard
@@ -339,32 +330,30 @@ curl http://localhost:9090/metrics
     ]
   }
 }
-
 ```
 
-## 🧪 Тестирование
+## Testing
 
 ```bash
-# Unit тесты
+# Unit tests
 pytest tests/unit/ -v
 
-# Integration тесты
+# Integration tests
 pytest tests/integration/ -v
 
-# Benchmark тесты
+# Benchmark tests
 pytest tests/benchmarks/ -v --benchmark-only
 
-# Тесты с покрытием
+# Tests with coverage
 pytest tests/ --cov=src --cov-report=html
 
-# Specific тесты
+# Specific tests
 pytest tests/test_connectors.py::TestTwitterConnector::test_search_tweets -v
-
 ```
 
-## 🔧 Продвинутые настройки
+## Advanced Settings
 
-### Ensemble модели
+### Ensemble Models
 
 ```python
 # src/ml/ensemble_model.py
@@ -374,57 +363,54 @@ ensemble_models = [
     "ProsusAI/finbert",                                  # Financial context
     "ElKulako/cryptobert"                                # Crypto-specific
 ]
-
 ```
 
-### Crypto-specific веса
+### Crypto-Specific Weights
 
 ```python
 # src/analysis/realtime_analyzer.py
 crypto_sentiment_weights = {
-    "moon": 0.8,           # Очень позитивно
-    "lambo": 0.7,          # Позитивно
-    "diamond hands": 0.8,  # Очень позитивно
-    "hodl": 0.6,           # Умеренно позитивно
-    "dump": -0.8,          # Очень негативно
-    "crash": -0.9,         # Крайне негативно
-    "bear": -0.6,          # Негативно
-    "paper hands": -0.5,   # Негативно
-    "fud": -0.7,           # Негативно
+    "moon": 0.8,           # Very positive
+    "lambo": 0.7,          # Positive
+    "diamond hands": 0.8,  # Very positive
+    "hodl": 0.6,           # Moderately positive
+    "dump": -0.8,          # Very negative
+    "crash": -0.9,         # Extremely negative
+    "bear": -0.6,          # Negative
+    "paper hands": -0.5,   # Negative
+    "fud": -0.7,           # Negative
 }
-
 ```
 
-## 📈 Производительность
+## Performance
 
 ### Benchmarks
 
-- **Real-time анализ**: >1000 сообщений/секунда
-- **Batch обработка**: >5000 сообщений/секунду (batch=100)
+- **Real-time analysis**: >1000 messages/second
+- **Batch processing**: >5000 messages/second (batch=100)
 - **API latency**: <50ms (95th percentile)
-- **Memory usage**: ~4GB (с GPU моделями)
-- **CPU usage**: ~40% (8 cores, с GPU)
+- **Memory usage**: ~4GB (with GPU models)
+- **CPU usage**: ~40% (8 cores, with GPU)
 
-### Оптимизация
+### Optimization
 
 ```python
-# Настройки для high-performance
-ML_BATCH_SIZE=64          # Увеличить для GPU
-ML_USE_GPU=true           # Обязательно для производительности
-ML_FP16=true             # Half precision для скорости
-REALTIME_BATCH_SIZE=128   # Больший batch для throughput
-WORKERS=8                # Больше workers для API
-
+# Settings for high-performance
+ML_BATCH_SIZE=64          # Increase for GPU
+ML_USE_GPU=true           # Required for performance
+ML_FP16=true             # Half precision for speed
+REALTIME_BATCH_SIZE=128   # Larger batch for throughput
+WORKERS=8                # More workers for API
 ```
 
-## 🛡️ Безопасность
+## Security
 
 ### JWT Authentication
 
 ```python
 from src.api.authentication import AuthManager
 
-# Создание токена
+# Create token
 auth_manager = AuthManager(config)
 token = await auth_manager.create_token({
     "user_id": 123,
@@ -432,28 +418,25 @@ token = await auth_manager.create_token({
     "is_admin": False
 })
 
-# Верификация
+# Verification
 user_info = await auth_manager.verify_token(token)
-
 ```
 
 ### Rate Limiting
 
 ```python
-# Автоматическое ограничение скорости
+# Automatic rate limiting
 RATE_LIMIT_REQUESTS=1000  # Requests per window
 RATE_LIMIT_WINDOW=3600    # Window in seconds
 
 # Per-platform rate limiting
 twitter_rate_limit = 100   # Per 15 minutes
 reddit_rate_limit = 60     # Per minute
-
 ```
 
-## 🏗️ Архитектура
+## Architecture
 
 ```
-
 ┌─────────────────────────────────────────────────────────────┐
 │                    Social Sentiment API                     │
 ├─────────────────────────────────────────────────────────────┤
@@ -471,55 +454,53 @@ reddit_rate_limit = 60     # Per minute
 ├─────────────────────────────────────────────────────────────┤
 │         PostgreSQL │ Redis │ Kafka │ Monitoring             │
 └─────────────────────────────────────────────────────────────┘
-
 ```
 
-## 📋 Roadmap
+## Roadmap
 
-### v1.1 (Q1 2024)
+### v1.1
 
 - [ ] Telegram Premium API integration
 - [ ] Advanced meme detection with image analysis
 - [ ] Crypto whale tracking
 - [ ] Enhanced Discord server analytics
 
-### v1.2 (Q2 2024)
+### v1.2
 
-- [ ] LinkedIn integration для B2B crypto sentiment
+- [ ] LinkedIn integration for B2B crypto sentiment
 - [ ] Advanced time series forecasting
 - [ ] Multi-language dashboard
 - [ ] Mobile app API
 
-### v1.3 (Q3 2024)
+### v1.3
 
 - [ ] AI-powered trend prediction
 - [ ] Custom model training pipeline
 - [ ] Advanced visualization dashboards
 - [ ] Cryptocurrency price correlation
 
-## 🤝 Contributing
+## Contributing
 
 ```bash
 # Fork repository
-git clone https://github.com/your-username/ml-framework-ml-social-sentiment-analyzer.git
+git clone https://github.com/your-username/ml-social-sentiment-analyzer.git
 
-# Создание feature ветки
+# Create feature branch
 git checkout -b feature/amazing-feature
 
-# Commit изменений
+# Commit changes
 git commit -m "Add amazing feature"
 
-# Push в ветку
+# Push to branch
 git push origin feature/amazing-feature
 
-# Создание Pull Request
-
+# Create Pull Request
 ```
 
 ### Code Style
 
 ```bash
-# Форматирование
+# Formatting
 black src/ tests/
 isort src/ tests/
 
@@ -531,28 +512,25 @@ mypy src/
 
 # Security scan
 bandit -r src/
-
 ```
 
-## 📄 Лицензия
+## License
 
-MIT License - см. [LICENSE](LICENSE) файл.
+MIT License - see [LICENSE](LICENSE) file.
 
-## 🆘 Support
+## Support
 
 - **Documentation**: [https://ml-framework-docs.io/ml-social-sentiment-analyzer](https://ml-framework-docs.io/ml-social-sentiment-analyzer)
-- **Issues**: [GitHub Issues](https://github.com/vlad/ml-framework-ml-social-sentiment-analyzer/issues)
-- **Discord**: [ML-Framework Community Discord](https://discord.gg/ml-framework)
-- **Email**: <ml-team@ml-framework.io>
+- **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
 
-## 📊 Stats
+## Stats
 
-![GitHub stars](https://img.shields.io/github/stars/vlad/ml-framework-ml-social-sentiment-analyzer)
-![GitHub issues](https://img.shields.io/github/issues/vlad/ml-framework-ml-social-sentiment-analyzer)
-![GitHub license](https://img.shields.io/github/license/vlad/ml-framework-ml-social-sentiment-analyzer)
+![GitHub stars](https://img.shields.io/github/stars/your-repo/ml-social-sentiment-analyzer)
+![GitHub issues](https://img.shields.io/github/issues/your-repo/ml-social-sentiment-analyzer)
+![GitHub license](https://img.shields.io/github/license/your-repo/ml-social-sentiment-analyzer)
 ![Python version](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Code coverage](https://img.shields.io/badge/coverage-85%25-green)
 
 ---
 
-**Создано с ❤️ ML-Framework ML Team для crypto-сообщества**
+**Built for Enterprise Social Sentiment Analysis**
