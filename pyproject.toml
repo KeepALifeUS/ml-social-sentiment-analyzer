@@ -3,16 +3,16 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ctb3-ml-social-sentiment-analyzer"
+name = "ml-social-sentiment-analyzer"
 version = "1.0.0"
 description = "Enterprise Social Media Sentiment Analyzer for Crypto Markets with enterprise patterns"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
-    {name = "CTB3 ML Team", email = "ml-team@ctb3.io"}
+    {name = "ML Team", email = "ml-team@example.com"}
 ]
 maintainers = [
-    {name = "CTB3 ML Team", email = "ml-team@ctb3.io"}
+    {name = "ML Team", email = "ml-team@example.com"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -116,10 +116,10 @@ monitoring = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/vlad/ctb3-ml-social-sentiment-analyzer"
-Documentation = "https://ctb3-docs.io/ml-social-sentiment-analyzer"
-Repository = "https://github.com/vlad/ctb3-ml-social-sentiment-analyzer.git"
-"Bug Tracker" = "https://github.com/vlad/ctb3-ml-social-sentiment-analyzer/issues"
+Homepage = "https://github.com/KeepALifeUS"
+Documentation = "https://example.com"
+Repository = "https://github.com/KeepALifeUS"
+"Bug Tracker" = "https://github.com/KeepALifeUS"
 
 [tool.setuptools.packages.find]
 where = ["src"]

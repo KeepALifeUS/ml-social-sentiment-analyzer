@@ -6,7 +6,7 @@ services:
     build:
       context: .
       target: production
-    container_name: ctb3-sentiment-api
+    container_name: sentiment-api
     ports:
       - '8004:8004'
       - '9090:9090' # Prometheus metrics
@@ -83,7 +83,7 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: ctb3-sentiment-postgres
+    container_name: sentiment-postgres
     environment:
       POSTGRES_DB: crypto_sentiment
       POSTGRES_USER: postgres
@@ -106,7 +106,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: ctb3-sentiment-redis
+    container_name: sentiment-redis
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
     volumes:
       - redis_data:/data
@@ -124,7 +124,7 @@ services:
   # Kafka (for streaming)
   kafka:
     image: confluentinc/cp-kafka:latest
-    container_name: ctb3-sentiment-kafka
+    container_name: sentiment-kafka
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
@@ -143,7 +143,7 @@ services:
   # Zookeeper (for Kafka)
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
-    container_name: ctb3-sentiment-zookeeper
+    container_name: sentiment-zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -158,7 +158,7 @@ services:
   # Prometheus (Monitoring)
   prometheus:
     image: prom/prometheus:latest
-    container_name: ctb3-sentiment-prometheus
+    container_name: sentiment-prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -178,7 +178,7 @@ services:
   # Grafana (Dashboards)
   grafana:
     image: grafana/grafana:latest
-    container_name: ctb3-sentiment-grafana
+    container_name: sentiment-grafana
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
       GF_USERS_ALLOW_SIGN_UP: false
@@ -197,7 +197,7 @@ services:
   # Nginx (Load Balancer & Proxy)
   nginx:
     image: nginx:alpine
-    container_name: ctb3-sentiment-nginx
+    container_name: sentiment-nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/ssl:/etc/nginx/ssl
@@ -211,12 +211,12 @@ services:
     restart: unless-stopped
 
   # Development services
-  # Jupyter Notebook для анализа
+  # Jupyter Notebook for analysis
   jupyter:
     build:
       context: .
       target: development
-    container_name: ctb3-sentiment-jupyter
+    container_name: sentiment-jupyter
     command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
     ports:
       - '8888:8888'
@@ -230,12 +230,12 @@ services:
     profiles:
       - development
 
-  # pgAdmin для управления БД
+  # pgAdmin for database management
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: ctb3-sentiment-pgadmin
+    container_name: sentiment-pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@ctb3.io}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
     volumes:
       - pgadmin_data:/var/lib/pgadmin
