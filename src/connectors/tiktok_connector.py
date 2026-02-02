@@ -1,8 +1,8 @@
 """
-TikTok Data Connector с enterprise паттернами
+TikTok Data Connector with enterprise patterns
 
-Интеграция для сбора TikTok контента связанного с криптовалютами
-через TikTok API и web scraping с максимальной надежностью.
+Integration for collection TikTok content connected with cryptocurrencies
+through TikTok API and web scraping with maximum reliability.
 """
 
 import asyncio
@@ -24,12 +24,12 @@ logger = structlog.get_logger(__name__)
 
 class TikTokConnector:
     """
-    Enterprise TikTok коннектор with enterprise patterns
+    Enterprise TikTok connector with enterprise patterns
     
     Features:
-    - TikTok API integration (если доступен)
-    - Web scraping как fallback
-    - Crypto hashtags мониторинг
+    - TikTok API integration (if available)
+    - Web scraping as fallback
+    - Crypto hashtags monitoring
     - Video sentiment analysis
     - Trend detection
     """
@@ -39,10 +39,10 @@ class TikTokConnector:
         self.metrics = MetricsCollector("tiktok_connector")
         self.logger = logger.bind(component="tiktok_connector")
         
-        # TikTok API клиент (если доступен)
+        # TikTok API client (if available)
         self._api_available = hasattr(config, 'tiktok_access_token')
         
-        # HTTP сессия для scraping
+        # HTTP session for scraping
         self._session: Optional[aiohttp.ClientSession] = None
         
         # Circuit breaker
@@ -61,7 +61,7 @@ class TikTokConnector:
             "#binance", "#coinbase", "#cryptomining", "#web3", "#metaverse"
         ]
         
-        # User agents для избежания блокировки
+        # User agents for avoidance blocking
         self.user_agents = [
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15',
@@ -69,7 +69,7 @@ class TikTokConnector:
         ]
     
     async def _get_session(self) -> aiohttp.ClientSession:
-        """Получить HTTP сессию с настройками."""
+        """Get HTTP session with settings."""
         if not self._session or self._session.closed:
             import random
             
@@ -102,12 +102,12 @@ class TikTokConnector:
         days_back: int = 7
     ) -> List[Dict[str, Any]]:
         """
-        Поиск crypto видео на TikTok
+        Search crypto video on TikTok
         
         Args:
-            hashtag: Конкретный hashtag (None = случайный crypto hashtag)
-            limit: Количество видео
-            days_back: Период поиска в днях
+            hashtag: Specific hashtag (None = random crypto hashtag)
+            limit: Number video
+            days_back: Period search in days
         """
         
         try:
@@ -115,17 +115,17 @@ class TikTokConnector:
                 import random
                 hashtag = random.choice(self.crypto_hashtags)
             
-            # Удаление # если есть
+            # Removal # if exists
             clean_hashtag = hashtag.lstrip('#')
             
             session = await self._get_session()
             
-            # URL для поиска по hashtag
+            # URL for search by hashtag
             search_url = f"https://www.tiktok.com/tag/{clean_hashtag}"
             
             videos = []
             
-            # Попытка получения данных через web scraping
+            # Attempt retrieval data through web scraping
             async with session.get(search_url) as response:
                 if response.status == 200:
                     html = await response.text()
@@ -134,12 +134,12 @@ class TikTokConnector:
                     self.logger.warning("TikTok request failed", 
                                       status=response.status, hashtag=hashtag)
             
-            # Фильтрация по времени и crypto-контенту
+            # Filtering by time and crypto-content
             cutoff_date = datetime.now() - timedelta(days=days_back)
             
             filtered_videos = []
             for video in videos[:limit]:
-                # Базовая проверка crypto-контента
+                # Base validation crypto-content
                 if self._is_crypto_related(video.get('description', '')):
                     filtered_videos.append(video)
             
@@ -155,21 +155,21 @@ class TikTokConnector:
             return []
     
     async def _parse_tiktok_page(self, html: str, hashtag: str) -> List[Dict[str, Any]]:
-        """Парсинг HTML страницы TikTok."""
+        """Parsing HTML pages TikTok."""
         
         try:
             soup = BeautifulSoup(html, 'html.parser')
             videos = []
             
-            # Поиск JSON данных в script тегах (TikTok часто использует это)
+            # Search JSON data in script tags (TikTok often uses this)
             script_tags = soup.find_all('script', {'id': '__NEXT_DATA__'})
             
             for script in script_tags:
                 try:
                     json_data = json.loads(script.string)
                     
-                    # Извлечение видео из JSON структуры
-                    # Структура может меняться, это базовый пример
+                    # Extraction video from JSON structures
+                    # Structure can change, this base example
                     if 'props' in json_data and 'pageProps' in json_data['props']:
                         items = self._extract_videos_from_json(json_data, hashtag)
                         videos.extend(items)
@@ -177,7 +177,7 @@ class TikTokConnector:
                 except json.JSONDecodeError:
                     continue
             
-            # Если JSON не найден, пробуем альтернативные методы
+            # If JSON not found, try alternative methods
             if not videos:
                 videos = await self._parse_fallback_method(soup, hashtag)
             
@@ -188,12 +188,12 @@ class TikTokConnector:
             return []
     
     def _extract_videos_from_json(self, json_data: dict, hashtag: str) -> List[Dict[str, Any]]:
-        """Извлечение видео из JSON данных."""
+        """Extraction video from JSON data."""
         
         videos = []
         
         try:
-            # Поиск видео в различных возможных путях JSON
+            # Search video in various possible paths JSON
             possible_paths = [
                 ['props', 'pageProps', 'itemList'],
                 ['props', 'pageProps', 'items'],
@@ -213,12 +213,12 @@ class TikTokConnector:
                         items = current
                         break
             
-            # Обработка найденных элементов
+            # Processing found elements
             for item in items:
                 if not isinstance(item, dict):
                     continue
                 
-                # Извлечение базовой информации
+                # Extraction base information
                 video_data = {
                     "id": item.get('id', ''),
                     "description": item.get('desc', ''),
@@ -259,12 +259,12 @@ class TikTokConnector:
         return videos
     
     async def _parse_fallback_method(self, soup: BeautifulSoup, hashtag: str) -> List[Dict[str, Any]]:
-        """Альтернативный метод парсинга через HTML элементы."""
+        """Alternative method parsing through HTML elements."""
         
         videos = []
         
         try:
-            # Поиск видео контейнеров по различным CSS селекторам
+            # Search video containers by various CSS selectors
             video_selectors = [
                 'div[data-e2e="challenge-item"]',
                 '.video-feed-item',
@@ -277,7 +277,7 @@ class TikTokConnector:
                 if items:
                     for item in items:
                         try:
-                            # Извлечение базовой информации из HTML
+                            # Extraction base information from HTML
                             description = self._extract_text_from_element(item, [
                                 '[data-e2e="video-desc"]',
                                 '.video-meta-caption',
@@ -308,7 +308,7 @@ class TikTokConnector:
                         except Exception:
                             continue
                     
-                    if videos:  # Если найдены видео, прекращаем поиск
+                    if videos:  # If found video, cease search
                         break
             
         except Exception as e:
@@ -317,7 +317,7 @@ class TikTokConnector:
         return videos
     
     def _extract_text_from_element(self, parent, selectors: List[str]) -> str:
-        """Извлечь текст из элемента по списку селекторов."""
+        """Extract text from element by list selectors."""
         for selector in selectors:
             element = parent.select_one(selector)
             if element:
@@ -325,13 +325,13 @@ class TikTokConnector:
         return ""
     
     async def get_hashtag_trends(self, limit: int = 20) -> List[Dict[str, Any]]:
-        """Получить трендовые crypto hashtags."""
+        """Get trend crypto hashtags."""
         
         try:
             trends = []
             session = await self._get_session()
             
-            # Проверка популярности каждого crypto hashtag
+            # Validation popularity of each crypto hashtag
             for hashtag in self.crypto_hashtags[:limit]:
                 try:
                     clean_hashtag = hashtag.lstrip('#')
@@ -341,10 +341,10 @@ class TikTokConnector:
                         if response.status == 200:
                             html = await response.text()
                             
-                            # Поиск счетчика видео
+                            # Search counter video
                             soup = BeautifulSoup(html, 'html.parser')
                             
-                            # Попытка найти счетчик просмотров
+                            # Attempt find counter views
                             count_element = soup.select_one('[data-e2e="challenge-vvcount"]')
                             view_count = 0
                             
@@ -362,13 +362,13 @@ class TikTokConnector:
                             
                             trends.append(trend_data)
                     
-                    # Задержка между запросами
+                    # Delay between requests
                     await asyncio.sleep(1)
                     
                 except Exception:
                     continue
             
-            # Сортировка по популярности
+            # Sorting by popularity
             trends.sort(key=lambda x: x['view_count'], reverse=True)
             
             self.logger.info("TikTok trends fetched", count=len(trends))
@@ -379,7 +379,7 @@ class TikTokConnector:
             return []
     
     def _parse_count_string(self, count_str: str) -> int:
-        """Парсинг строки с количеством (1.2M, 500K, etc.)."""
+        """Parsing strings with number (1.2M, 500K, etc.)."""
         
         try:
             count_str = count_str.lower().replace(',', '').strip()
@@ -397,14 +397,14 @@ class TikTokConnector:
             return 0
     
     def _extract_crypto_symbols(self, text: str) -> List[str]:
-        """Извлечь упоминания криптовалют."""
+        """Extract mentions cryptocurrencies."""
         if not text:
             return []
         
         symbols = []
         text_upper = text.upper()
         
-        # Основные символы
+        # Main symbols
         crypto_symbols = [
             "BTC", "ETH", "ADA", "SOL", "DOT", "LINK", "UNI", "MATIC",
             "AVAX", "ATOM", "FTM", "NEAR", "ALGO", "XRP", "LTC", "BCH",
@@ -415,14 +415,14 @@ class TikTokConnector:
             if symbol in text_upper or f"${symbol}" in text_upper:
                 symbols.append(f"${symbol}")
         
-        # Поиск дополнительных символов
+        # Search additional symbols
         dollar_symbols = re.findall(r'\$[A-Z]{2,6}', text_upper)
         symbols.extend(dollar_symbols)
         
         return list(set(symbols))
     
     def _extract_sentiment_indicators(self, text: str) -> Dict[str, int]:
-        """Извлечь индикаторы настроения."""
+        """Extract indicators sentiment."""
         if not text:
             return {"bullish_count": 0, "bearish_count": 0, "neutral_count": 0}
         
@@ -439,7 +439,7 @@ class TikTokConnector:
         }
     
     def _is_crypto_related(self, text: str) -> bool:
-        """Проверить связанность с криптовалютами."""
+        """Check connectivity with cryptocurrencies."""
         if not text:
             return False
         
@@ -452,11 +452,11 @@ class TikTokConnector:
         return any(keyword in text_lower for keyword in crypto_keywords)
     
     async def health_check(self) -> Dict[str, Any]:
-        """Проверка состояния коннектора."""
+        """Validation state connector."""
         try:
             session = await self._get_session()
             
-            # Тестовый запрос
+            # Test request
             async with session.get("https://www.tiktok.com/tag/bitcoin") as response:
                 status_ok = response.status == 200
             
@@ -476,7 +476,7 @@ class TikTokConnector:
             }
     
     async def disconnect(self) -> None:
-        """Закрыть подключения."""
+        """Close connections."""
         if self._session and not self._session.closed:
             await self._session.close()
         self.logger.info("TikTok connector disconnected")

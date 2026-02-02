@@ -1,8 +1,8 @@
 """
-YouTube API Connector с enterprise паттернами
+YouTube API Connector with enterprise patterns
 
-Интеграция с YouTube Data API v3 для мониторинга crypto-каналов,
-комментариев и трендов с полной надежностью.
+Integration with YouTube Data API v3 for monitoring crypto-channels,
+comments and trends with full reliability.
 """
 
 import asyncio
@@ -21,7 +21,7 @@ logger = structlog.get_logger(__name__)
 
 class YouTubeConnector:
     """
-    Enterprise YouTube API коннектор with enterprise patterns
+    Enterprise YouTube API connector with enterprise patterns
     
     Features:
     - YouTube Data API v3 integration
@@ -36,7 +36,7 @@ class YouTubeConnector:
         self.metrics = MetricsCollector("youtube_connector")
         self.logger = logger.bind(component="youtube_connector")
         
-        # YouTube API клиент
+        # YouTube API client
         self._youtube = build(
             'youtube',
             'v3',
@@ -50,7 +50,7 @@ class YouTubeConnector:
             expected_exception=Exception
         )
         
-        # Crypto YouTube каналы
+        # Crypto YouTube channels
         self.crypto_channels = [
             "coin_bureau",           # Coin Bureau
             "aantonop",             # Andreas Antonopoulos
@@ -80,19 +80,19 @@ class YouTubeConnector:
         max_results: int = 50
     ) -> List[Dict[str, Any]]:
         """
-        Поиск crypto-видео на YouTube
+        Search crypto-video on YouTube
         
         Args:
-            query: Поисковый запрос (None = автоматический crypto query)
-            published_after: Дата после которой публиковать
-            max_results: Максимальное количество результатов
+            query: Search request (None = automatic crypto query)
+            published_after: Date after of which publish
+            max_results: Maximum number results
         """
         
         try:
             if not query:
                 query = "cryptocurrency bitcoin ethereum trading analysis"
             
-            # Параметры поиска
+            # Parameters search
             search_params = {
                 'part': 'id,snippet',
                 'q': query,
@@ -107,18 +107,18 @@ class YouTubeConnector:
             if published_after:
                 search_params['publishedAfter'] = published_after.strftime('%Y-%m-%dT%H:%M:%SZ')
             
-            # Выполнение поиска
+            # Execution search
             search_response = self._youtube.search().list(**search_params).execute()
             
             videos = []
             video_ids = []
             
-            # Сбор ID видео для получения статистики
+            # Collection ID video for retrieval statistics
             for item in search_response.get('items', []):
                 if item['id']['kind'] == 'youtube#video':
                     video_ids.append(item['id']['videoId'])
             
-            # Получение статистики видео
+            # Retrieval statistics video
             if video_ids:
                 stats_response = self._youtube.videos().list(
                     part='statistics,contentDetails',
@@ -132,7 +132,7 @@ class YouTubeConnector:
             else:
                 stats_dict = {}
             
-            # Обработка результатов
+            # Processing results
             for item in search_response.get('items', []):
                 if item['id']['kind'] != 'youtube#video':
                     continue
@@ -182,10 +182,10 @@ class YouTubeConnector:
         max_results: int = 100,
         crypto_filter: bool = True
     ) -> List[Dict[str, Any]]:
-        """Получить комментарии к видео с crypto фильтром."""
+        """Get comments to video with crypto filter."""
         
         try:
-            # Получение комментариев
+            # Retrieval comments
             comments_response = self._youtube.commentThreads().list(
                 part='snippet,replies',
                 videoId=video_id,
@@ -199,7 +199,7 @@ class YouTubeConnector:
             for item in comments_response.get('items', []):
                 top_comment = item['snippet']['topLevelComment']['snippet']
                 
-                # Фильтрация по crypto если включена
+                # Filtering by crypto if enabled
                 comment_text = top_comment['textDisplay']
                 if crypto_filter and not self._is_crypto_related(comment_text):
                     continue
@@ -218,7 +218,7 @@ class YouTubeConnector:
                     "platform": "youtube"
                 }
                 
-                # Добавление ответов
+                # Addition responses
                 replies = []
                 if 'replies' in item:
                     for reply_item in item['replies']['comments']:
@@ -253,10 +253,10 @@ class YouTubeConnector:
         max_results: int = 50,
         published_after: Optional[datetime] = None
     ) -> List[Dict[str, Any]]:
-        """Получить видео с канала."""
+        """Get video with channel."""
         
         try:
-            # Параметры поиска по каналу
+            # Parameters search by channel
             search_params = {
                 'part': 'id,snippet',
                 'channelId': channel_id,
@@ -268,7 +268,7 @@ class YouTubeConnector:
             if published_after:
                 search_params['publishedAfter'] = published_after.strftime('%Y-%m-%dT%H:%M:%SZ')
             
-            # Поиск видео канала
+            # Search video channel
             search_response = self._youtube.search().list(**search_params).execute()
             
             videos = []
@@ -304,7 +304,7 @@ class YouTubeConnector:
             return []
     
     async def get_channel_statistics(self, channel_id: str) -> Dict[str, Any]:
-        """Получить статистику канала."""
+        """Get statistics channel."""
         
         try:
             channel_response = self._youtube.channels().list(
@@ -342,16 +342,16 @@ class YouTubeConnector:
         region_code: str = 'US',
         max_results: int = 50
     ) -> List[Dict[str, Any]]:
-        """Получить трендовые crypto видео."""
+        """Get trend crypto video."""
         
         try:
-            # Получение трендовых видео
+            # Retrieval trend video
             videos_response = self._youtube.videos().list(
                 part='id,snippet,statistics',
                 chart='mostPopular',
                 regionCode=region_code,
                 maxResults=max_results,
-                videoCategoryId='25'  # News & Politics (часто содержит crypto)
+                videoCategoryId='25'  # News & Politics (often contains crypto)
             ).execute()
             
             crypto_videos = []
@@ -360,7 +360,7 @@ class YouTubeConnector:
                 snippet = item['snippet']
                 title_desc = snippet['title'] + ' ' + snippet['description']
                 
-                # Фильтр crypto-контента
+                # Filter crypto-content
                 if self._is_crypto_related(title_desc):
                     stats = item['statistics']
                     
@@ -391,11 +391,11 @@ class YouTubeConnector:
             return []
     
     def _extract_crypto_symbols(self, text: str) -> List[str]:
-        """Извлечь упоминания криптовалют."""
+        """Extract mentions cryptocurrencies."""
         symbols = []
         text_upper = text.upper()
         
-        # Основные символы
+        # Main symbols
         crypto_symbols = [
             "BTC", "ETH", "ADA", "SOL", "DOT", "LINK", "UNI", "MATIC",
             "AVAX", "ATOM", "FTM", "NEAR", "ALGO", "XRP", "LTC", "BCH"
@@ -405,14 +405,14 @@ class YouTubeConnector:
             if symbol in text_upper or f"${symbol}" in text_upper:
                 symbols.append(f"${symbol}")
         
-        # Поиск дополнительных символов
+        # Search additional symbols
         dollar_symbols = re.findall(r'\$[A-Z]{2,6}', text_upper)
         symbols.extend(dollar_symbols)
         
         return list(set(symbols))
     
     def _extract_sentiment_indicators(self, text: str) -> Dict[str, int]:
-        """Извлечь индикаторы настроения."""
+        """Extract indicators sentiment."""
         text_lower = text.lower()
         
         bullish_terms = ["moon", "lambo", "bullish", "pump", "rocket", "gains", "profit", "hodl"]
@@ -426,14 +426,14 @@ class YouTubeConnector:
         }
     
     def _is_crypto_related(self, text: str) -> bool:
-        """Проверить связанность с криптовалютами."""
+        """Check connectivity with cryptocurrencies."""
         text_lower = text.lower()
         return any(keyword in text_lower for keyword in self.crypto_keywords)
     
     async def health_check(self) -> Dict[str, Any]:
-        """Проверка состояния коннектора."""
+        """Validation state connector."""
         try:
-            # Тестовый запрос
+            # Test request
             test_response = self._youtube.search().list(
                 part='id',
                 q='bitcoin',
@@ -443,7 +443,7 @@ class YouTubeConnector:
             
             return {
                 "status": "healthy" if test_response else "unhealthy",
-                "api_quota_exceeded": False,  # Можно добавить логику проверки квоты
+                "api_quota_exceeded": False,  # Possible add logic validation quotas
                 "circuit_breaker_state": str(self._circuit_breaker.current_state),
                 "metrics": self.metrics.get_metrics()
             }

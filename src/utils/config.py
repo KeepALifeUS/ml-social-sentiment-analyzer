@@ -1,8 +1,8 @@
 """
-Конфигурация системы анализа настроений
+Configuration system analysis sentiments
 
- enterprise-grade конфигурация с поддержкой различных
-окружений и валидацией параметров.
+ enterprise-grade configuration with support various
+environments and validation parameters.
 """
 
 import os
@@ -15,7 +15,7 @@ logger = structlog.get_logger(__name__)
 
 @dataclass
 class DatabaseConfig:
-    """Конфигурация базы данных."""
+    """Configuration base data."""
     host: str = "localhost"
     port: int = 5432
     database: str = "crypto_sentiment"
@@ -28,7 +28,7 @@ class DatabaseConfig:
 
 @dataclass
 class RedisConfig:
-    """Конфигурация Redis."""
+    """Configuration Redis."""
     host: str = "localhost"
     port: int = 6379
     database: int = 0
@@ -39,7 +39,7 @@ class RedisConfig:
 
 @dataclass
 class TwitterConfig:
-    """Конфигурация Twitter API."""
+    """Configuration Twitter API."""
     api_key: str = ""
     api_secret: str = ""
     access_token: str = ""
@@ -52,7 +52,7 @@ class TwitterConfig:
 
 @dataclass
 class RedditConfig:
-    """Конфигурация Reddit API."""
+    """Configuration Reddit API."""
     client_id: str = ""
     client_secret: str = ""
     username: str = ""
@@ -65,7 +65,7 @@ class RedditConfig:
 
 @dataclass
 class TelegramConfig:
-    """Конфигурация Telegram API."""
+    """Configuration Telegram API."""
     api_id: int = 0
     api_hash: str = ""
     phone: str = ""
@@ -77,7 +77,7 @@ class TelegramConfig:
 
 @dataclass
 class DiscordConfig:
-    """Конфигурация Discord Bot."""
+    """Configuration Discord Bot."""
     bot_token: str = ""
     
     @property
@@ -86,7 +86,7 @@ class DiscordConfig:
 
 @dataclass
 class YouTubeConfig:
-    """Конфигурация YouTube API."""
+    """Configuration YouTube API."""
     api_key: str = ""
     
     @property
@@ -95,7 +95,7 @@ class YouTubeConfig:
 
 @dataclass
 class TikTokConfig:
-    """Конфигурация TikTok API."""
+    """Configuration TikTok API."""
     access_token: str = ""
     
     @property
@@ -104,7 +104,7 @@ class TikTokConfig:
 
 @dataclass
 class MLConfig:
-    """Конфигурация ML моделей."""
+    """Configuration ML models."""
     model_cache_dir: str = "./models"
     device: str = "auto"  # auto, cpu, cuda, mps
     batch_size: int = 32
@@ -123,7 +123,7 @@ class MLConfig:
 
 @dataclass
 class MonitoringConfig:
-    """Конфигурация мониторинга."""
+    """Configuration monitoring."""
     prometheus_port: int = 9090
     enable_tracing: bool = True
     jaeger_endpoint: str = "http://localhost:14268/api/traces"
@@ -132,7 +132,7 @@ class MonitoringConfig:
     
 @dataclass
 class SecurityConfig:
-    """Конфигурация безопасности."""
+    """Configuration security."""
     jwt_secret: str = ""
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60
@@ -143,13 +143,13 @@ class SecurityConfig:
 
 class Config:
     """
-    Главный класс конфигурации with enterprise patterns
+    Main class configuration with enterprise patterns
     
     Features:
-    - Environment-based конфигурация
-    - Валидация параметров
-    - Секретное управление
-    - Hot-reload конфигурации
+    - Environment-based configuration
+    - Validation parameters
+    - Secret management
+    - Hot-reload configuration
     - Health checks
     """
     
@@ -157,16 +157,16 @@ class Config:
         self.env = env
         self.logger = logger.bind(component="config", environment=env)
         
-        # Загрузка конфигурации
+        # Loading configuration
         self._load_config()
         
-        # Валидация
+        # Validation
         self._validate_config()
         
         self.logger.info("Configuration loaded successfully", env=env)
     
     def _load_config(self) -> None:
-        """Загрузка конфигурации из переменных окружения."""
+        """Loading configuration from variables environment."""
         
         # Database
         self.database = DatabaseConfig(
@@ -259,7 +259,7 @@ class Config:
             allowed_origins=os.getenv("ALLOWED_ORIGINS", "*").split(",")
         )
         
-        # Дополнительные параметры
+        # Additional parameters
         self.api_host = os.getenv("API_HOST", "0.0.0.0")
         self.api_port = int(os.getenv("API_PORT", "8004"))
         self.debug = os.getenv("DEBUG", "false").lower() == "true"
@@ -270,12 +270,12 @@ class Config:
         self.realtime_max_queue_size = int(os.getenv("REALTIME_MAX_QUEUE_SIZE", "1000"))
         self.realtime_timeout = float(os.getenv("REALTIME_TIMEOUT", "1.0"))
         
-        # URLs для подключений
+        # URLs for connections
         self.database_url = self._build_database_url()
         self.redis_url = self._build_redis_url()
     
     def _build_database_url(self) -> str:
-        """Построение URL для базы данных."""
+        """Construction URL for base data."""
         
         db = self.database
         if db.password:
@@ -286,7 +286,7 @@ class Config:
         return f"postgresql://{auth}@{db.host}:{db.port}/{db.database}"
     
     def _build_redis_url(self) -> str:
-        """Построение URL для Redis."""
+        """Construction URL for Redis."""
         
         redis = self.redis
         if redis.password:
@@ -297,11 +297,11 @@ class Config:
         return f"redis://{auth}{redis.host}:{redis.port}/{redis.database}"
     
     def _validate_config(self) -> None:
-        """Валидация конфигурации."""
+        """Validation configuration."""
         
         errors = []
         
-        # Проверка критических параметров
+        # Validation critical parameters
         if self.env == "production":
             if not self.security.jwt_secret:
                 errors.append("JWT_SECRET is required in production")
@@ -318,18 +318,18 @@ class Config:
             ]):
                 errors.append("At least one social media platform must be configured")
         
-        # Проверка ML настроек
+        # Validation ML settings
         if self.ml.batch_size <= 0:
             errors.append("ML batch_size must be positive")
         
         if self.ml.max_sequence_length <= 0:
             errors.append("ML max_sequence_length must be positive")
         
-        # Проверка портов
+        # Validation ports
         if not (1024 <= self.api_port <= 65535):
             errors.append("API port must be between 1024 and 65535")
         
-        # Проверка rate limiting
+        # Validation rate limiting
         if self.security.rate_limit_requests <= 0:
             errors.append("Rate limit requests must be positive")
         
@@ -338,7 +338,7 @@ class Config:
             raise ValueError(f"Configuration errors: {', '.join(errors)}")
     
     def get_platform_configs(self) -> Dict[str, Any]:
-        """Получить конфигурации платформ."""
+        """Get configuration platforms."""
         
         return {
             "twitter": self.twitter,
@@ -350,7 +350,7 @@ class Config:
         }
     
     def get_enabled_platforms(self) -> List[str]:
-        """Получить список включенных платформ."""
+        """Get list enabled platforms."""
         
         enabled = []
         
@@ -370,7 +370,7 @@ class Config:
         return enabled
     
     def health_check(self) -> Dict[str, Any]:
-        """Проверка состояния конфигурации."""
+        """Validation state configuration."""
         
         return {
             "environment": self.env,
@@ -394,7 +394,7 @@ class Config:
         }
     
     def to_dict(self) -> Dict[str, Any]:
-        """Конвертация в словарь (без секретов)."""
+        """Conversion in dictionary (without secrets)."""
         
         return {
             "environment": self.env,
@@ -422,15 +422,15 @@ class Config:
             }
         }
 
-# Глобальный экземпляр конфигурации
+# Global instance configuration
 config = Config(os.getenv("ENVIRONMENT", "development"))
 
 def get_config() -> Config:
-    """Получить глобальную конфигурацию."""
+    """Get global configuration."""
     return config
 
 def reload_config() -> Config:
-    """Перезагрузить конфигурацию."""
+    """Restart configuration."""
     global config
     config = Config(os.getenv("ENVIRONMENT", "development"))
     return config

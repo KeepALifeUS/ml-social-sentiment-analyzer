@@ -1,8 +1,8 @@
 """
-Утилиты и вспомогательные модули
+Utilities and helper modules
 
-Содержит общие утилиты для работы с социальными сетями,
-конфигурацией и валидацией данных.
+Contains general utilities for work with social networks,
+configuration and validation data.
 """
 
 from .config import Config

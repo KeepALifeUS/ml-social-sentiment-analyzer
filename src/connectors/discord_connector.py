@@ -1,8 +1,8 @@
 """
-Discord Bot Connector с enterprise паттернами
+Discord Bot Connector with enterprise patterns
 
-Интеграция с Discord API через discord.py для мониторинга
-crypto-серверов и каналов с enterprise-grade функциональностью.
+Integration with Discord API through discord.py for monitoring
+crypto-servers and channels with enterprise-grade functionality.
 """
 
 import asyncio
@@ -23,11 +23,11 @@ logger = structlog.get_logger(__name__)
 
 class DiscordConnector:
     """
-    Enterprise Discord API коннектор with enterprise patterns
+    Enterprise Discord API connector with enterprise patterns
     
     Features:
     - Discord.py bot integration
-    - Crypto-servers мониторинг
+    - Crypto-servers monitoring
     - Real-time message streaming
     - Channel-specific sentiment tracking
     - User activity analysis
@@ -39,7 +39,7 @@ class DiscordConnector:
         self.metrics = MetricsCollector("discord_connector")
         self.logger = logger.bind(component="discord_connector")
         
-        # Discord bot настройки
+        # Discord bot settings
         intents = discord.Intents.default()
         intents.message_content = True
         intents.guild_messages = True
@@ -63,9 +63,9 @@ class DiscordConnector:
         self._monitored_guilds = []
         self._message_cache = []
         
-        # Crypto Discord сервера (Guild IDs)
+        # Crypto Discord server (Guild IDs)
         self.crypto_guilds = [
-            # Основные crypto Discord сервера (заменить на реальные ID)
+            # Main crypto Discord server (replace on real ID)
             "123456789012345678",  # Bitcoin Community
             "234567890123456789",  # Ethereum
             "345678901234567890",  # CryptoCurrency
@@ -84,7 +84,7 @@ class DiscordConnector:
         self._setup_event_handlers()
     
     def _setup_event_handlers(self):
-        """Настройка обработчиков событий бота."""
+        """Configuration handlers events bot."""
         
         @self.bot.event
         async def on_ready():
@@ -95,19 +95,19 @@ class DiscordConnector:
         
         @self.bot.event
         async def on_message(message):
-            # Избегать обработки собственных сообщений
+            # Avoid processing own messages
             if message.author == self.bot.user:
                 return
             
-            # Фильтрация по crypto-контенту
+            # Filtering by crypto-content
             if not self._is_crypto_related(message.content):
                 return
             
-            # Создать данные сообщения
+            # Create data messages
             message_data = await self._parse_message(message)
             self._message_cache.append(message_data)
             
-            # Ограничение кэша
+            # Limitation cache
             if len(self._message_cache) > 1000:
                 self._message_cache = self._message_cache[-500:]
             
@@ -118,7 +118,7 @@ class DiscordConnector:
             if user == self.bot.user:
                 return
             
-            # Отслеживание реакций на crypto-сообщения
+            # Tracking reactions on crypto-messages
             if self._is_crypto_related(reaction.message.content):
                 self.metrics.increment("reactions_tracked")
         
@@ -128,13 +128,13 @@ class DiscordConnector:
             self.metrics.increment("bot_errors")
     
     async def connect(self) -> bool:
-        """Запустить Discord бота."""
+        """Launch Discord bot."""
         try:
-            # Запуск бота в фоновом режиме
+            # Launch bot in background mode
             asyncio.create_task(self.bot.start(self.config.discord_bot_token))
             
-            # Ожидание подключения
-            for _ in range(30):  # 30 секунд ожидания
+            # Waiting connections
+            for _ in range(30):  # 30 seconds waiting
                 if self._connected:
                     return True
                 await asyncio.sleep(1)
@@ -156,14 +156,14 @@ class DiscordConnector:
         crypto_filter: bool = True
     ) -> List[Dict[str, Any]]:
         """
-        Получить сообщения из Guild (сервера)
+        Get messages from Guild (server)
         
         Args:
-            guild_id: ID сервера Discord
-            channel_name: Имя канала (None = все каналы)
-            limit: Количество сообщений
-            hours_back: Период поиска в часах
-            crypto_filter: Фильтровать crypto-контент
+            guild_id: ID server Discord
+            channel_name: Name channel (None = all channels)
+            limit: Number messages
+            hours_back: Period search in hours
+            crypto_filter: Filter crypto-content
         """
         
         if not self._connected:
@@ -175,23 +175,23 @@ class DiscordConnector:
                 self.logger.warning("Guild not found", guild_id=guild_id)
                 return []
             
-            # Временное окно
+            # Temporary window
             after_time = datetime.utcnow() - timedelta(hours=hours_back)
             
             all_messages = []
             
-            # Выбор каналов
+            # Selection channels
             channels = []
             if channel_name:
                 channel = discord.utils.get(guild.text_channels, name=channel_name)
                 if channel:
                     channels = [channel]
             else:
-                channels = guild.text_channels[:10]  # Ограничение для производительности
+                channels = guild.text_channels[:10]  # Limitation for performance
             
             for channel in channels:
                 try:
-                    # Проверка разрешений
+                    # Validation permissions
                     if not channel.permissions_for(guild.me).read_message_history:
                         continue
                     
@@ -200,7 +200,7 @@ class DiscordConnector:
                         if not message.content:
                             continue
                         
-                        # Фильтрация crypto-контента
+                        # Filtering crypto-content
                         if crypto_filter and not self._is_crypto_related(message.content):
                             continue
                         
@@ -234,7 +234,7 @@ class DiscordConnector:
         hours_back: int = 1,
         crypto_filter: bool = True
     ) -> List[Dict[str, Any]]:
-        """Получить сообщения из кэша за последние часы."""
+        """Get messages from cache for recent hours."""
         
         cutoff_time = datetime.utcnow() - timedelta(hours=hours_back)
         
@@ -257,7 +257,7 @@ class DiscordConnector:
         guild_id: Optional[int] = None,
         limit: int = 100
     ) -> List[Dict[str, Any]]:
-        """Поиск сообщений по запросу."""
+        """Search messages by request."""
         
         if not self._connected:
             await self.connect()
@@ -265,14 +265,14 @@ class DiscordConnector:
         results = []
         
         try:
-            # Поиск в указанном guild или во всех
+            # Search in specified guild or in all
             guilds = [self.bot.get_guild(guild_id)] if guild_id else self.bot.guilds
             
             for guild in guilds:
                 if not guild:
                     continue
                 
-                for channel in guild.text_channels[:5]:  # Ограничение каналов
+                for channel in guild.text_channels[:5]:  # Limitation channels
                     try:
                         if not channel.permissions_for(guild.me).read_message_history:
                             continue
@@ -295,7 +295,7 @@ class DiscordConnector:
                                         guild=guild.name, channel=channel.name, error=str(e))
                         continue
             
-            # Сортировка по релевантности
+            # Sorting by relevance
             results.sort(key=lambda x: x["relevance_score"], reverse=True)
             
             self.logger.info("Message search completed", query=query, results=len(results))
@@ -306,7 +306,7 @@ class DiscordConnector:
             return []
     
     async def get_guild_stats(self, guild_id: int) -> Dict[str, Any]:
-        """Получить статистику по серверу."""
+        """Get statistics by server."""
         
         if not self._connected:
             await self.connect()
@@ -316,7 +316,7 @@ class DiscordConnector:
             if not guild:
                 return {}
             
-            # Подсчет активных пользователей
+            # Counting active users
             active_users = sum(1 for member in guild.members if member.status != discord.Status.offline)
             
             return {
@@ -341,9 +341,9 @@ class DiscordConnector:
             return {}
     
     async def _parse_message(self, message: discord.Message) -> Dict[str, Any]:
-        """Парсинг Discord сообщения в стандартный формат."""
+        """Parsing Discord messages in standard format."""
         
-        # Информация об авторе
+        # Information about author
         author_data = {
             "id": message.author.id,
             "username": message.author.name,
@@ -355,7 +355,7 @@ class DiscordConnector:
             "created_at": message.author.created_at.isoformat(),
         }
         
-        # Информация о канале и сервере
+        # Information about channel and server
         guild_data = {
             "id": message.guild.id if message.guild else None,
             "name": message.guild.name if message.guild else "Direct Message",
@@ -367,13 +367,13 @@ class DiscordConnector:
             "type": str(message.channel.type),
         }
         
-        # Реакции
+        # Reactions
         reactions = {}
         for reaction in message.reactions:
             emoji = str(reaction.emoji)
             reactions[emoji] = reaction.count
         
-        # Вложения
+        # Investments
         attachments = [
             {
                 "id": att.id,
@@ -406,11 +406,11 @@ class DiscordConnector:
         }
     
     def _extract_crypto_symbols(self, text: str) -> List[str]:
-        """Извлечь упоминания криптовалют."""
+        """Extract mentions cryptocurrencies."""
         symbols = []
         text_upper = text.upper()
         
-        # Основные символы
+        # Main symbols
         crypto_symbols = [
             "BTC", "ETH", "ADA", "SOL", "DOT", "LINK", "UNI", "MATIC",
             "AVAX", "ATOM", "FTM", "NEAR", "ALGO", "XRP", "LTC", "BCH"
@@ -420,14 +420,14 @@ class DiscordConnector:
             if symbol in text_upper or f"${symbol}" in text_upper:
                 symbols.append(f"${symbol}")
         
-        # Поиск дополнительных символов
+        # Search additional symbols
         dollar_symbols = re.findall(r'\$[A-Z]{2,6}', text_upper)
         symbols.extend(dollar_symbols)
         
         return list(set(symbols))
     
     def _extract_sentiment_indicators(self, text: str) -> Dict[str, int]:
-        """Извлечь индикаторы настроения."""
+        """Extract indicators sentiment."""
         text_lower = text.lower()
         
         bullish_terms = ["🚀", "🌙", "💎", "📈", "moon", "lambo", "diamond hands", "hodl", "pump", "bull"]
@@ -441,25 +441,25 @@ class DiscordConnector:
         }
     
     def _is_crypto_related(self, text: str) -> bool:
-        """Проверить связанность с криптовалютами."""
+        """Check connectivity with cryptocurrencies."""
         text_lower = text.lower()
         return any(keyword in text_lower for keyword in self.crypto_keywords)
     
     def _calculate_relevance_score(self, text: str, query: str) -> float:
-        """Рассчитать релевантность сообщения."""
+        """Calculate relevance messages."""
         text_lower = text.lower()
         query_lower = query.lower()
         
-        # Подсчет вхождений
+        # Counting occurrences
         count = text_lower.count(query_lower)
         
-        # Бонус за crypto-термины
+        # Bonus for crypto-terms
         crypto_bonus = sum(1 for keyword in self.crypto_keywords if keyword in text_lower)
         
         return count * 10 + crypto_bonus
     
     async def health_check(self) -> Dict[str, Any]:
-        """Проверка состояния коннектора."""
+        """Validation state connector."""
         try:
             return {
                 "status": "healthy" if self._connected else "unhealthy",
@@ -479,7 +479,7 @@ class DiscordConnector:
             }
     
     async def disconnect(self) -> None:
-        """Закрыть подключение."""
+        """Close connection."""
         await self.bot.close()
         self._connected = False
         self.logger.info("Discord connector disconnected")

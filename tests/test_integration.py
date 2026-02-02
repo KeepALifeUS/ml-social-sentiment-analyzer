@@ -1,7 +1,7 @@
 """
-Integration тесты для Social Media Sentiment Analyzer
+Integration tests for Social Media Sentiment Analyzer
 
-Тестирование полной функциональности системы with enterprise patterns.
+Testing full functionality system with enterprise patterns.
 """
 
 import pytest
@@ -16,7 +16,7 @@ from src.api.rest_api import SocialSentimentAPI
 
 @pytest.fixture
 def test_config():
-    """Тестовая конфигурация."""
+    """Test configuration."""
     config = Mock(spec=Config)
     config.database_url = "sqlite:///:memory:"
     config.redis_url = "redis://localhost:6379/1"
@@ -34,7 +34,7 @@ def test_config():
 
 @pytest.fixture
 def sample_tweets():
-    """Образцы твитов для тестирования."""
+    """Samples tweets for testing."""
     return [
         {
             "id": "123456789",
@@ -60,11 +60,11 @@ def sample_tweets():
     ]
 
 class TestRealtimeAnalyzer:
-    """Tests for анализатора реального времени."""
+    """Tests for analyzer real time."""
     
     @pytest.mark.asyncio
     async def test_analyzer_initialization(self, test_config):
-        """Тест инициализации анализатора."""
+        """Test initialization analyzer."""
         
         with patch('src.analysis.realtime_analyzer.EnsembleModel') as mock_ensemble:
             mock_ensemble.return_value.initialize = AsyncMock()
@@ -81,7 +81,7 @@ class TestRealtimeAnalyzer:
     
     @pytest.mark.asyncio
     async def test_single_sentiment_analysis(self, test_config):
-        """Тест анализа одного сообщения."""
+        """Test analysis one messages."""
         
         with patch('src.analysis.realtime_analyzer.EnsembleModel') as mock_ensemble:
             mock_model = Mock()
@@ -112,7 +112,7 @@ class TestRealtimeAnalyzer:
     
     @pytest.mark.asyncio
     async def test_batch_sentiment_analysis(self, test_config, sample_tweets):
-        """Тест batch анализа."""
+        """Test batch analysis."""
         
         with patch('src.analysis.realtime_analyzer.EnsembleModel') as mock_ensemble:
             mock_model = Mock()
@@ -140,11 +140,11 @@ class TestRealtimeAnalyzer:
                 assert results[2].sentiment == "neutral"   # Neutral tweet
 
 class TestTwitterConnector:
-    """Tests for Twitter коннектора."""
+    """Tests for Twitter connector."""
     
     @pytest.mark.asyncio
     async def test_twitter_connection(self, test_config):
-        """Тест подключения к Twitter."""
+        """Test connections to Twitter."""
         
         with patch('tweepy.Client') as mock_client:
             mock_tweepy = Mock()
@@ -161,7 +161,7 @@ class TestTwitterConnector:
     
     @pytest.mark.asyncio
     async def test_search_crypto_tweets(self, test_config):
-        """Тест поиска crypto твитов."""
+        """Test search crypto tweets."""
         
         mock_tweet = Mock()
         mock_tweet.id = "123456789"
@@ -202,14 +202,14 @@ class TestAPIIntegration:
     
     @pytest.fixture
     def api_client(self):
-        """Тестовый API клиент."""
+        """Test API client."""
         from fastapi.testclient import TestClient
         
         api = SocialSentimentAPI()
         return TestClient(api.app)
     
     def test_health_endpoint(self, api_client):
-        """Тест health check endpoint."""
+        """Test health check endpoint."""
         
         response = api_client.get("/health")
         
@@ -221,7 +221,7 @@ class TestAPIIntegration:
     
     @pytest.mark.asyncio
     async def test_sentiment_analysis_endpoint(self, api_client):
-        """Тест анализа настроения через API."""
+        """Test analysis sentiment through API."""
         
         with patch('src.api.rest_api.RealtimeSentimentAnalyzer') as mock_analyzer:
             mock_result = Mock()
@@ -250,22 +250,22 @@ class TestAPIIntegration:
             assert "$BTC" in data["crypto_symbols"]
 
 class TestEndToEndWorkflow:
-    """End-to-end тесты полного workflow."""
+    """End-to-end tests full workflow."""
     
     @pytest.mark.asyncio
     async def test_full_sentiment_pipeline(self, test_config, sample_tweets):
-        """Тест полного pipeline анализа настроений."""
+        """Test full pipeline analysis sentiments."""
         
-        # Моки для всех компонентов
+        # Mocks for all components
         with patch('src.connectors.twitter_connector.TwitterConnector') as mock_connector:
             with patch('src.analysis.realtime_analyzer.RealtimeSentimentAnalyzer') as mock_analyzer:
                 
-                # Настройка мока коннектора
+                # Configuration mock connector
                 mock_connector_instance = Mock()
                 mock_connector_instance.search_recent_tweets = AsyncMock(return_value=sample_tweets)
                 mock_connector.return_value = mock_connector_instance
                 
-                # Настройка мока анализатора
+                # Configuration mock analyzer
                 mock_analyzer_instance = Mock()
                 mock_results = [
                     Mock(sentiment="positive", confidence=0.85, crypto_symbols=["$BTC"]),
@@ -275,25 +275,25 @@ class TestEndToEndWorkflow:
                 mock_analyzer_instance.analyze_batch = AsyncMock(return_value=mock_results)
                 mock_analyzer.return_value = mock_analyzer_instance
                 
-                # Выполнение workflow
+                # Execution workflow
                 connector = mock_connector(test_config)
                 analyzer = mock_analyzer(test_config)
                 
-                # 1. Сбор твитов
+                # 1. Collection tweets
                 tweets = await connector.search_recent_tweets()
                 assert len(tweets) == 3
                 
-                # 2. Анализ настроений
+                # 2. Analysis sentiments
                 texts = [tweet["text"] for tweet in tweets]
                 results = await analyzer.analyze_batch(texts)
                 
-                # 3. Проверка результатов
+                # 3. Validation results
                 assert len(results) == 3
                 assert results[0].sentiment == "positive"
                 assert results[1].sentiment == "negative"
                 assert results[2].sentiment == "neutral"
                 
-                # 4. Проверка распределения crypto символов
+                # 4. Validation distribution crypto symbols
                 all_symbols = []
                 for result in results:
                     all_symbols.extend(result.crypto_symbols)
@@ -303,10 +303,10 @@ class TestEndToEndWorkflow:
 
     @pytest.mark.asyncio
     async def test_error_handling_and_fallbacks(self, test_config):
-        """Тест обработки ошибок и fallback механизмов."""
+        """Test processing errors and fallback mechanisms."""
         
         with patch('src.analysis.realtime_analyzer.EnsembleModel') as mock_ensemble:
-            # Имитация ошибки модели
+            # Imitation errors model
             mock_ensemble.return_value.predict = AsyncMock(side_effect=Exception("Model error"))
             
             with patch('aioredis.from_url'):
@@ -316,7 +316,7 @@ class TestEndToEndWorkflow:
                 analyzer.preprocessor.preprocess.return_value = "test text"
                 analyzer.preprocessor.extract_crypto_symbols.return_value = []
                 
-                # Должен вернуть fallback результат
+                # Must return fallback result
                 result = await analyzer.analyze_sentiment("Test text", "api")
                 
                 assert result.sentiment == "neutral"
@@ -324,11 +324,11 @@ class TestEndToEndWorkflow:
                 assert result.model_version == "fallback"
 
 class TestPerformanceMetrics:
-    """Тесты производительности и метрик."""
+    """Tests performance and metrics."""
     
     @pytest.mark.asyncio
     async def test_throughput_measurement(self, test_config):
-        """Тест измерения throughput анализатора."""
+        """Test measurements throughput analyzer."""
         
         with patch('src.analysis.realtime_analyzer.EnsembleModel') as mock_ensemble:
             mock_model = Mock()
@@ -346,7 +346,7 @@ class TestPerformanceMetrics:
                 analyzer.preprocessor.preprocess.side_effect = lambda x: x
                 analyzer.preprocessor.extract_crypto_symbols.return_value = []
                 
-                # Тест batch обработки
+                # Test batch processing
                 import time
                 start_time = time.time()
                 
@@ -358,12 +358,12 @@ class TestPerformanceMetrics:
                 throughput = len(texts) / processing_time
                 
                 assert len(results) == 100
-                assert throughput > 50  # Минимум 50 сообщений/секунду
+                assert throughput > 50  # Minimum 50 messages/second
                 print(f"Throughput: {throughput:.1f} messages/second")
     
     @pytest.mark.asyncio
     async def test_memory_usage_monitoring(self, test_config):
-        """Тест мониторинга использования памяти."""
+        """Test monitoring usage memory."""
         
         import psutil
         import os
@@ -386,15 +386,15 @@ class TestPerformanceMetrics:
                 analyzer.preprocessor.preprocess.side_effect = lambda x: x
                 analyzer.preprocessor.extract_crypto_symbols.return_value = []
                 
-                # Обработка большого batch
+                # Processing large batch
                 texts = [f"Large batch test message {i}" for i in range(1000)]
                 await analyzer.analyze_batch(texts)
                 
                 final_memory = process.memory_info().rss / 1024 / 1024  # MB
                 memory_increase = final_memory - initial_memory
                 
-                # Не должно быть значительного увеличения памяти
-                assert memory_increase < 100  # Менее 100MB увеличения
+                # Not must be significant increase memory
+                assert memory_increase < 100  # Less 100MB increase
                 print(f"Memory usage: {initial_memory:.1f}MB -> {final_memory:.1f}MB (+{memory_increase:.1f}MB)")
 
 if __name__ == "__main__":

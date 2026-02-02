@@ -1,8 +1,8 @@
 """
-Модуль анализа настроений
+Module analysis sentiments
 
-Содержит компоненты для анализа настроений в социальных сетях
-с использованием различных подходов и моделей.
+Contains components for analysis sentiments in social networks
+with using various approaches and models.
 """
 
 from .realtime_analyzer import RealtimeSentimentAnalyzer

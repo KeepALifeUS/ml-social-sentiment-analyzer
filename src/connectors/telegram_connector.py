@@ -1,8 +1,8 @@
 """
-Telegram API Connector с enterprise паттернами
+Telegram API Connector with enterprise patterns
 
-Интеграция с Telegram API через Telethon для мониторинга
-crypto-каналов и групп с enterprise-grade надежностью.
+Integration with Telegram API through Telethon for monitoring
+crypto-channels and groups with enterprise-grade reliability.
 """
 
 import asyncio
@@ -24,14 +24,14 @@ logger = structlog.get_logger(__name__)
 
 class TelegramConnector:
     """
-    Enterprise Telegram API коннектор with enterprise patterns
+    Enterprise Telegram API connector with enterprise patterns
     
     Features:
-    - Telethon integration с async поддержкой
-    - Мониторинг crypto-каналов и групп
-    - Circuit breaker и rate limiting
+    - Telethon integration with async support
+    - Monitoring crypto-channels and groups
+    - Circuit breaker and rate limiting
     - Real-time message streaming
-    - Crypto-focused фильтрация контента
+    - Crypto-focused filtering content
     - User activity tracking
     """
     
@@ -40,7 +40,7 @@ class TelegramConnector:
         self.metrics = MetricsCollector("telegram_connector")
         self.logger = logger.bind(component="telegram_connector")
         
-        # Telegram клиент
+        # Telegram client
         self._client = TelegramClient(
             'crypto_sentiment_session',
             config.telegram_api_id,
@@ -57,7 +57,7 @@ class TelegramConnector:
         self._connected = False
         self._monitored_channels = []
         
-        # Crypto Telegram каналы и группы
+        # Crypto Telegram channels and groups
         self.crypto_channels = [
             "@bitcoin", "@ethereum", "@binance", "@cryptocom", 
             "@coinbase", "@kucoincom", "@okx", "@gate_io",
@@ -67,7 +67,7 @@ class TelegramConnector:
             "@Coindesk", "@Cointelegraph", "@TheBlock__"
         ]
         
-        # Crypto keywords для фильтрации
+        # Crypto keywords for filtering
         self.crypto_keywords = [
             "btc", "bitcoin", "eth", "ethereum", "crypto", "cryptocurrency",
             "blockchain", "defi", "nft", "altcoin", "hodl", "moon", "lambo",
@@ -77,7 +77,7 @@ class TelegramConnector:
         ]
     
     async def connect(self) -> bool:
-        """Установить подключение к Telegram API."""
+        """Install connection to Telegram API."""
         try:
             await self._client.start()
             
@@ -89,7 +89,7 @@ class TelegramConnector:
                 self.metrics.increment("connection_success")
                 return True
             else:
-                # Требуется авторизация по номеру телефона
+                # Is required authorization by number phone
                 phone = self.config.telegram_phone
                 await self._client.send_code_request(phone)
                 self.logger.warning("Telegram requires phone verification", phone=phone)
@@ -112,26 +112,26 @@ class TelegramConnector:
         crypto_filter: bool = True
     ) -> List[Dict[str, Any]]:
         """
-        Получить сообщения из канала с crypto фильтрацией
+        Get messages from channel with crypto filtering
         
         Args:
-            channel_username: Имя канала (с @ или без)
-            limit: Количество сообщений
-            hours_back: Сколько часов назад искать
-            crypto_filter: Фильтровать только crypto-контент
+            channel_username: Name channel (with @ or without)
+            limit: Number messages
+            hours_back: How many hours back search
+            crypto_filter: Filter only crypto-content
         """
         
         if not self._connected:
             await self.connect()
         
         try:
-            # Нормализация имени канала
+            # Normalization name channel
             if not channel_username.startswith('@'):
                 channel_username = '@' + channel_username
             
             entity = await self._client.get_entity(channel_username)
             
-            # Временное окно для поиска
+            # Temporary window for search
             offset_date = datetime.now() - timedelta(hours=hours_back)
             
             messages = []
@@ -143,11 +143,11 @@ class TelegramConnector:
                 if not message.text:
                     continue
                 
-                # Фильтрация по crypto контенту
+                # Filtering by crypto content
                 if crypto_filter and not self._is_crypto_related(message.text):
                     continue
                 
-                # Информация об авторе
+                # Information about author
                 sender = None
                 if message.sender:
                     if isinstance(message.sender, User):
@@ -209,18 +209,18 @@ class TelegramConnector:
         crypto_filter: bool = True
     ) -> AsyncGenerator[Dict[str, Any], None]:
         """
-        Мониторинг каналов в реальном времени
+        Monitoring channels in real time
         
         Args:
-            channels: Список каналов для мониторинга
-            crypto_filter: Фильтровать только crypto-контент
+            channels: List channels for monitoring
+            crypto_filter: Filter only crypto-content
         """
         
         if not self._connected:
             await self.connect()
         
         if not channels:
-            channels = self.crypto_channels[:10]  # Ограничение для производительности
+            channels = self.crypto_channels[:10]  # Limitation for performance
         
         entities = []
         for channel in channels:
@@ -240,11 +240,11 @@ class TelegramConnector:
                 if not event.message.text:
                     return
                 
-                # Фильтрация по crypto контенту
+                # Filtering by crypto content
                 if crypto_filter and not self._is_crypto_related(event.message.text):
                     return
                 
-                # Информация об отправителе
+                # Information about sender
                 sender = None
                 if event.sender:
                     sender = {
@@ -274,7 +274,7 @@ class TelegramConnector:
         
         self.logger.info("Started real-time monitoring", channels=len(entities))
         
-        # Запуск мониторинга
+        # Launch monitoring
         try:
             await self._client.run_until_disconnected()
         except KeyboardInterrupt:
@@ -286,7 +286,7 @@ class TelegramConnector:
         channels: Optional[List[str]] = None,
         limit: int = 100
     ) -> List[Dict[str, Any]]:
-        """Поиск сообщений в каналах по запросу."""
+        """Search messages in channels by request."""
         
         if not self._connected:
             await self.connect()
@@ -332,14 +332,14 @@ class TelegramConnector:
                                 channel=channel, error=str(e))
                 continue
         
-        # Сортировка по релевантности
+        # Sorting by relevance
         all_results.sort(key=lambda x: x["relevance_score"], reverse=True)
         
         self.logger.info("Search completed", query=query, total_results=len(all_results))
         return all_results
     
     async def get_channel_info(self, channel_username: str) -> Dict[str, Any]:
-        """Получить информацию о канале."""
+        """Get information about channel."""
         
         if not self._connected:
             await self.connect()
@@ -377,7 +377,7 @@ class TelegramConnector:
             return {}
     
     def _parse_reactions(self, reactions) -> Dict[str, int]:
-        """Парсинг реакций на сообщение."""
+        """Parsing reactions on message."""
         if not reactions or not reactions.results:
             return {}
         
@@ -389,11 +389,11 @@ class TelegramConnector:
         return parsed
     
     def _extract_crypto_symbols(self, text: str) -> List[str]:
-        """Извлечь упоминания криптовалют."""
+        """Extract mentions cryptocurrencies."""
         symbols = []
         text_upper = text.upper()
         
-        # Основные символы
+        # Main symbols
         crypto_symbols = [
             "BTC", "ETH", "ADA", "SOL", "DOT", "LINK", "UNI", "MATIC",
             "AVAX", "ATOM", "FTM", "NEAR", "ALGO", "XRP", "LTC", "BCH"
@@ -403,14 +403,14 @@ class TelegramConnector:
             if symbol in text_upper or f"${symbol}" in text_upper:
                 symbols.append(f"${symbol}")
         
-        # Поиск дополнительных символов
+        # Search additional symbols
         dollar_symbols = re.findall(r'\$[A-Z]{2,6}', text_upper)
         symbols.extend(dollar_symbols)
         
         return list(set(symbols))
     
     def _extract_sentiment_indicators(self, text: str) -> Dict[str, int]:
-        """Извлечь индикаторы настроения."""
+        """Extract indicators sentiment."""
         text_lower = text.lower()
         
         bullish_terms = ["🚀", "🌙", "💎", "👐", "📈", "moon", "lambo", "diamond hands", "hodl", "pump"]
@@ -424,30 +424,30 @@ class TelegramConnector:
         }
     
     def _extract_urls(self, text: str) -> List[str]:
-        """Извлечь URL из текста."""
+        """Extract URL from text."""
         url_pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
         return url_pattern.findall(text)
     
     def _is_crypto_related(self, text: str) -> bool:
-        """Проверить связанность с криптовалютами."""
+        """Check connectivity with cryptocurrencies."""
         text_lower = text.lower()
         return any(keyword in text_lower for keyword in self.crypto_keywords)
     
     def _calculate_relevance_score(self, text: str, query: str) -> float:
-        """Рассчитать релевантность сообщения к запросу."""
+        """Calculate relevance messages to request."""
         text_lower = text.lower()
         query_lower = query.lower()
         
-        # Подсчет вхождений запроса
+        # Counting occurrences request
         count = text_lower.count(query_lower)
         
-        # Бонус за crypto-термины
+        # Bonus for crypto-terms
         crypto_bonus = sum(1 for keyword in self.crypto_keywords if keyword in text_lower)
         
         return count * 10 + crypto_bonus
     
     async def health_check(self) -> Dict[str, Any]:
-        """Проверка состояния коннектора."""
+        """Validation state connector."""
         try:
             if not self._connected:
                 await self.connect()
@@ -472,7 +472,7 @@ class TelegramConnector:
             }
     
     async def disconnect(self) -> None:
-        """Закрыть подключение."""
+        """Close connection."""
         await self._client.disconnect()
         self._connected = False
         self.logger.info("Telegram connector disconnected")

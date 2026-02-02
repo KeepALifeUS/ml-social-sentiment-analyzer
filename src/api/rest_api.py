@@ -1,8 +1,8 @@
 """
-REST API для системы анализа настроений
+REST API for system analysis sentiments
 
-FastAPI-based REST API with enterprise patterns для
-интеграции с торговыми системами и внешними приложениями.
+FastAPI-based REST API with enterprise patterns for
+integration with trading systems and external applications.
 """
 
 import asyncio
@@ -28,72 +28,72 @@ from .authentication import AuthManager
 
 logger = structlog.get_logger(__name__)
 
-# Pydantic модели для API
+# Pydantic model for API
 class SentimentAnalysisRequest(BaseModel):
-    """Запрос на анализ настроения."""
-    text: str = Field(..., min_length=1, max_length=5000, description="Текст для анализа")
-    platform: Optional[str] = Field("api", description="Платформа источника")
-    priority: Optional[int] = Field(1, ge=1, le=3, description="Приоритет обработки")
-    include_details: Optional[bool] = Field(False, description="Включить детальную информацию")
+    """Request on analysis sentiment."""
+    text: str = Field(..., min_length=1, max_length=5000, description="Text for analysis")
+    platform: Optional[str] = Field("api", description="Platform source")
+    priority: Optional[int] = Field(1, ge=1, le=3, description="Priority processing")
+    include_details: Optional[bool] = Field(False, description="Enable detailed information")
 
 class BatchSentimentRequest(BaseModel):
-    """Batch запрос на анализ настроений."""
-    texts: List[str] = Field(..., max_items=100, description="Список текстов для анализа")
-    platform: Optional[str] = Field("api", description="Платформа источника")
-    include_details: Optional[bool] = Field(False, description="Включить детальную информацию")
+    """Batch request on analysis sentiments."""
+    texts: List[str] = Field(..., max_items=100, description="List texts for analysis")
+    platform: Optional[str] = Field("api", description="Platform source")
+    include_details: Optional[bool] = Field(False, description="Enable detailed information")
     
     @validator('texts')
     def validate_texts(cls, v):
         if not v:
-            raise ValueError('Список текстов не может быть пустым')
+            raise ValueError('List texts not can be empty')
         for text in v:
             if not text or len(text.strip()) == 0:
-                raise ValueError('Текст не может быть пустым')
+                raise ValueError('Text not can be empty')
             if len(text) > 5000:
-                raise ValueError('Текст не может быть длиннее 5000 символов')
+                raise ValueError('Text not can be longer 5000 symbols')
         return v
 
 class SentimentResponse(BaseModel):
-    """Ответ с результатом анализа."""
-    sentiment: str = Field(..., description="Настроение: positive, negative, neutral")
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Уверенность модели")
-    scores: Dict[str, float] = Field(..., description="Детальные оценки")
-    crypto_symbols: List[str] = Field(default_factory=list, description="Найденные крипто-символы")
-    processing_time_ms: float = Field(..., description="Время обработки в миллисекундах")
-    model_version: str = Field(..., description="Версия модели")
-    timestamp: datetime = Field(..., description="Время анализа")
+    """Response with result analysis."""
+    sentiment: str = Field(..., description="Sentiment: positive, negative, neutral")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence model")
+    scores: Dict[str, float] = Field(..., description="Detailed estimation")
+    crypto_symbols: List[str] = Field(default_factory=list, description="Found crypto-symbols")
+    processing_time_ms: float = Field(..., description="Time processing in milliseconds")
+    model_version: str = Field(..., description="Version model")
+    timestamp: datetime = Field(..., description="Time analysis")
 
 class TrendingTopicsRequest(BaseModel):
-    """Запрос трендовых тем."""
-    platforms: Optional[List[str]] = Field(None, description="Список платформ")
-    time_window_hours: Optional[int] = Field(24, ge=1, le=168, description="Временное окно в часах")
-    limit: Optional[int] = Field(50, ge=1, le=200, description="Количество результатов")
-    crypto_only: Optional[bool] = Field(True, description="Только крипто-темы")
+    """Request trend the."""
+    platforms: Optional[List[str]] = Field(None, description="List platforms")
+    time_window_hours: Optional[int] = Field(24, ge=1, le=168, description="Temporary window in hours")
+    limit: Optional[int] = Field(50, ge=1, le=200, description="Number results")
+    crypto_only: Optional[bool] = Field(True, description="Only crypto-topics")
 
 class AggregatedSentimentRequest(BaseModel):
-    """Запрос агрегированного настроения."""
-    symbol: Optional[str] = Field(None, description="Крипто-символ для фильтрации")
-    platforms: Optional[List[str]] = Field(None, description="Список платформ")
-    time_window_hours: Optional[int] = Field(24, ge=1, le=168, description="Временное окно")
-    aggregation_method: Optional[str] = Field("weighted", description="Метод агрегации")
+    """Request aggregated sentiment."""
+    symbol: Optional[str] = Field(None, description="Crypto-symbol for filtering")
+    platforms: Optional[List[str]] = Field(None, description="List platforms")
+    time_window_hours: Optional[int] = Field(24, ge=1, le=168, description="Temporary window")
+    aggregation_method: Optional[str] = Field("weighted", description="Method aggregation")
 
 class HealthResponse(BaseModel):
-    """Ответ health check."""
-    status: str = Field(..., description="Состояние системы")
-    timestamp: datetime = Field(..., description="Время проверки")
-    components: Dict[str, Any] = Field(..., description="Состояние компонентов")
-    metrics: Dict[str, Any] = Field(..., description="Основные метрики")
+    """Response health check."""
+    status: str = Field(..., description="State system")
+    timestamp: datetime = Field(..., description="Time validation")
+    components: Dict[str, Any] = Field(..., description="State components")
+    metrics: Dict[str, Any] = Field(..., description="Main metrics")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Lifespan events для startup/shutdown."""
+    """Lifespan events for startup/shutdown."""
     
     # Startup
     logger.info("Starting Social Sentiment API")
     
     config = get_config()
     
-    # Инициализация компонентов
+    # Initialization components
     app.state.realtime_analyzer = RealtimeSentimentAnalyzer(config)
     await app.state.realtime_analyzer.initialize()
     
@@ -126,25 +126,25 @@ async def lifespan(app: FastAPI):
 
 class SocialSentimentAPI:
     """
-    Enterprise REST API для анализа настроений
+    Enterprise REST API for analysis sentiments
     
     Features:
-    - FastAPI с async поддержкой
-    - JWT аутентификация
+    - FastAPI with async support
+    - JWT authentication
     - Rate limiting
-    - CORS поддержка
-    - Metrics и monitoring
-    - Swagger/OpenAPI документация
+    - CORS support
+    - Metrics and monitoring
+    - Swagger/OpenAPI documentation
     """
     
     def __init__(self):
         self.config = get_config()
         self.logger = logger.bind(component="rest_api")
         
-        # Создание FastAPI приложения
+        # Creation FastAPI application
         self.app = FastAPI(
             title="Social Sentiment Analyzer API",
-            description="Enterprise API для анализа настроений в социальных сетях",
+            description="Enterprise API for analysis sentiments in social networks",
             version="1.0.0",
             docs_url="/docs",
             redoc_url="/redoc",
@@ -152,17 +152,17 @@ class SocialSentimentAPI:
             lifespan=lifespan
         )
         
-        # Настройка middleware
+        # Configuration middleware
         self._setup_middleware()
         
-        # Регистрация роутов
+        # Registration routes
         self._setup_routes()
         
         # Security
         self.security = HTTPBearer(auto_error=False)
         
     def _setup_middleware(self):
-        """Настройка middleware."""
+        """Configuration middleware."""
         
         # CORS
         self.app.add_middleware(
@@ -176,15 +176,15 @@ class SocialSentimentAPI:
         # Gzip compression
         self.app.add_middleware(GZipMiddleware, minimum_size=1000)
         
-        # Request middleware для метрик
+        # Request middleware for metrics
         @self.app.middleware("http")
         async def metrics_middleware(request: Request, call_next):
             start_time = time.time()
             
-            # Обработка запроса
+            # Processing request
             response = await call_next(request)
             
-            # Запись метрик
+            # Entry metrics
             processing_time = (time.time() - start_time) * 1000
             if hasattr(self.app.state, 'metrics'):
                 self.app.state.metrics.record_api_request(
@@ -197,16 +197,16 @@ class SocialSentimentAPI:
             return response
     
     def _setup_routes(self):
-        """Регистрация API роутов."""
+        """Registration API routes."""
         
         @self.app.get("/health", response_model=HealthResponse)
         async def health_check():
-            """Проверка состояния системы."""
+            """Validation state system."""
             
             try:
                 components = {}
                 
-                # Проверка компонентов
+                # Validation components
                 if hasattr(self.app.state, 'realtime_analyzer'):
                     components['realtime_analyzer'] = await self.app.state.realtime_analyzer.health_check()
                 
@@ -216,12 +216,12 @@ class SocialSentimentAPI:
                 if hasattr(self.app.state, 'trending_detector'):
                     components['trending_detector'] = await self.app.state.trending_detector.health_check()
                 
-                # Сбор метрик
+                # Collection metrics
                 metrics = {}
                 if hasattr(self.app.state, 'metrics'):
                     metrics = self.app.state.metrics.get_metrics()
                 
-                # Определение общего состояния
+                # Determination total state
                 overall_status = "healthy"
                 for component_status in components.values():
                     if component_status.get('status') != 'healthy':
@@ -244,13 +244,13 @@ class SocialSentimentAPI:
             request: SentimentAnalysisRequest,
             credentials: Optional[HTTPAuthorizationCredentials] = Depends(self.security)
         ):
-            """Анализ настроения одного текста."""
+            """Analysis sentiment one text."""
             
-            # Аутентификация
+            # Authentication
             await self._authenticate(credentials)
             
             try:
-                # Анализ через realtime analyzer
+                # Analysis through realtime analyzer
                 result = await self.app.state.realtime_analyzer.analyze_sentiment(
                     text=request.text,
                     platform=request.platform,
@@ -277,18 +277,18 @@ class SocialSentimentAPI:
             background_tasks: BackgroundTasks,
             credentials: Optional[HTTPAuthorizationCredentials] = Depends(self.security)
         ):
-            """Batch анализ настроений."""
+            """Batch analysis sentiments."""
             
             await self._authenticate(credentials)
             
             try:
-                # Batch анализ
+                # Batch analysis
                 results = await self.app.state.realtime_analyzer.analyze_batch(
                     texts=request.texts,
                     platform=request.platform
                 )
                 
-                # Background задача для дополнительной обработки
+                # Background task for additional processing
                 if request.include_details:
                     background_tasks.add_task(
                         self._process_batch_details, 
@@ -318,7 +318,7 @@ class SocialSentimentAPI:
             request: AggregatedSentimentRequest = Depends(),
             credentials: Optional[HTTPAuthorizationCredentials] = Depends(self.security)
         ):
-            """Получить агрегированное настроение."""
+            """Get aggregated sentiment."""
             
             await self._authenticate(credentials)
             
@@ -341,7 +341,7 @@ class SocialSentimentAPI:
             request: TrendingTopicsRequest = Depends(),
             credentials: Optional[HTTPAuthorizationCredentials] = Depends(self.security)
         ):
-            """Получить трендовые темы."""
+            """Get trend topics."""
             
             await self._authenticate(credentials)
             
@@ -363,7 +363,7 @@ class SocialSentimentAPI:
         async def get_metrics(
             credentials: Optional[HTTPAuthorizationCredentials] = Depends(self.security)
         ):
-            """Получить метрики системы."""
+            """Get metrics system."""
             
             await self._authenticate(credentials, admin_required=True)
             
@@ -381,7 +381,7 @@ class SocialSentimentAPI:
         async def get_prometheus_metrics(
             credentials: Optional[HTTPAuthorizationCredentials] = Depends(self.security)
         ):
-            """Получить метрики в формате Prometheus."""
+            """Get metrics in format Prometheus."""
             
             await self._authenticate(credentials, admin_required=True)
             
@@ -403,18 +403,18 @@ class SocialSentimentAPI:
         async def stream_sentiment_analysis(
             credentials: Optional[HTTPAuthorizationCredentials] = Depends(self.security)
         ):
-            """Потоковая передача анализа настроений."""
+            """Streaming transmission analysis sentiments."""
             
             await self._authenticate(credentials)
             
             async def sentiment_stream():
-                """Генератор потока данных."""
+                """Generator flow data."""
                 
                 try:
-                    # Подключение к потоку реального времени
+                    # Connection to flow real time
                     async for result in self.app.state.realtime_analyzer.stream_analyze():
                         yield f"data: {result.model_dump_json()}\n\n"
-                        await asyncio.sleep(0.1)  # Небольшая задержка
+                        await asyncio.sleep(0.1)  # Small delay
                         
                 except Exception as e:
                     logger.error("Stream analysis failed", error=str(e))
@@ -435,10 +435,10 @@ class SocialSentimentAPI:
         credentials: Optional[HTTPAuthorizationCredentials],
         admin_required: bool = False
     ) -> None:
-        """Аутентификация пользователя."""
+        """Authentication user."""
         
         if not hasattr(self.app.state, 'auth_manager'):
-            return  # Auth не настроена
+            return  # Auth not configured
         
         if not credentials:
             raise HTTPException(status_code=401, detail="Authentication required")
@@ -458,10 +458,10 @@ class SocialSentimentAPI:
         results: List[SentimentResult],
         platform: str
     ) -> None:
-        """Background обработка дополнительных деталей."""
+        """Background processing additional details."""
         
         try:
-            # Сохранение результатов для анализа трендов
+            # Saving results for analysis trends
             for result in results:
                 await self.app.state.trending_detector.process_result(result, platform)
             
@@ -471,7 +471,7 @@ class SocialSentimentAPI:
             logger.error("Batch details processing failed", error=str(e))
     
     def run(self, host: str = None, port: int = None) -> None:
-        """Запуск API сервера."""
+        """Launch API server."""
         
         host = host or self.config.api_host
         port = port or self.config.api_port
@@ -487,7 +487,7 @@ class SocialSentimentAPI:
             workers=1 if self.config.debug else self.config.workers
         )
 
-# Создание глобального экземпляра API
+# Creation global instance API
 app = SocialSentimentAPI().app
 
 if __name__ == "__main__":

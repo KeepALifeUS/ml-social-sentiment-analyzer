@@ -1,8 +1,8 @@
 """
-Модуль мониторинга и метрик
+Module monitoring and metrics
 
-Компоненты для сбора метрик, мониторинга производительности
-и создания дашбордов with enterprise patterns.
+Components for collection metrics, monitoring performance
+and creation dashboards with enterprise patterns.
 """
 
 from .metrics_collector import MetricsCollector

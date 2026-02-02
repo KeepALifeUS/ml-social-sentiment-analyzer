@@ -1,8 +1,8 @@
 """
-Сборщик метрик с enterprise паттернами
+Collector metrics with enterprise patterns
 
-Высокопроизводительный сбор метрик для мониторинга работы
-системы анализа настроений в реальном времени.
+High-performance collection metrics for monitoring work
+system analysis sentiments in real time.
 """
 
 import time
@@ -20,21 +20,21 @@ logger = structlog.get_logger(__name__)
 
 @dataclass
 class MetricValue:
-    """Значение метрики с временной меткой."""
+    """Value metrics with temporal label."""
     value: Union[int, float]
     timestamp: datetime
     labels: Dict[str, str] = field(default_factory=dict)
 
 class MetricsCollector:
     """
-    Enterprise сборщик метрик with enterprise patterns
+    Enterprise collector metrics with enterprise patterns
     
     Features:
-    - Prometheus интеграция
-    - High-performance метрики
-    - Автоматическое экспонирование
-    - Batch обновления
-    - Thread-safe операции
+    - Prometheus integration
+    - High-performance metrics
+    - Automatic exposition
+    - Batch updates
+    - Thread-safe operations
     - Retention policy
     """
     
@@ -45,35 +45,35 @@ class MetricsCollector:
         # Thread safety
         self._lock = threading.RLock()
         
-        # Prometheus registry для изоляции компонента
+        # Prometheus registry for isolation component
         self.registry = CollectorRegistry()
         
-        # Инициализация Prometheus метрик
+        # Initialization Prometheus metrics
         self._init_prometheus_metrics()
         
-        # Внутренние метрики
+        # Inner metrics
         self._counters: Dict[str, int] = defaultdict(int)
         self._gauges: Dict[str, float] = defaultdict(float)
         self._histograms: Dict[str, deque] = defaultdict(lambda: deque(maxlen=1000))
         self._timers: Dict[str, List[float]] = defaultdict(list)
         
-        # Конфигурация retention
+        # Configuration retention
         self.retention_period = timedelta(hours=24)
         self.max_metrics_per_type = 10000
         
-        # Статистика
+        # Statistics
         self._start_time = time.time()
         self._last_cleanup = time.time()
         
         self.logger.info("Metrics collector initialized", component=component_name)
     
     def _init_prometheus_metrics(self) -> None:
-        """Инициализация Prometheus метрик."""
+        """Initialization Prometheus metrics."""
         
-        # Префикс для всех метрик
+        # Prefix for all metrics
         prefix = f"social_sentiment_{self.component_name}_"
         
-        # Основные метрики
+        # Main metrics
         self.prom_messages_total = Counter(
             f"{prefix}messages_total",
             "Total number of messages processed",
@@ -144,12 +144,12 @@ class MetricsCollector:
         })
     
     def increment(self, metric_name: str, value: int = 1, labels: Optional[Dict[str, str]] = None) -> None:
-        """Увеличить счетчик."""
+        """Increase counter."""
         
         with self._lock:
             self._counters[metric_name] += value
             
-            # Обновление Prometheus метрик
+            # Update Prometheus metrics
             if labels:
                 if metric_name.endswith("_processed") or metric_name.endswith("_fetched"):
                     self.prom_messages_total.labels(
@@ -163,29 +163,29 @@ class MetricsCollector:
                     ).inc(value)
     
     def gauge(self, metric_name: str, value: float, labels: Optional[Dict[str, str]] = None) -> None:
-        """Установить значение gauge метрики."""
+        """Install value gauge metrics."""
         
         with self._lock:
             self._gauges[metric_name] = value
             
-            # Обновление Prometheus gauge
+            # Update Prometheus gauge
             if "queue_size" in metric_name:
                 self.prom_queue_size.labels(
                     queue_type=labels.get("type", "default") if labels else "default"
                 ).set(value)
     
     def histogram(self, metric_name: str, value: float, labels: Optional[Dict[str, str]] = None) -> None:
-        """Добавить значение в гистограмму."""
+        """Add value in histogram."""
         
         with self._lock:
             self._histograms[metric_name].append(value)
             
-            # Обновление Prometheus histogram
+            # Update Prometheus histogram
             if "processing_time" in metric_name:
                 self.prom_processing_duration.labels(
                     operation=labels.get("operation", "unknown") if labels else "unknown",
                     platform=labels.get("platform", "unknown") if labels else "unknown"
-                ).observe(value / 1000.0)  # Конвертация ms в секунды
+                ).observe(value / 1000.0)  # Conversion ms in seconds
             elif "confidence" in metric_name:
                 self.prom_sentiment_confidence.labels(
                     sentiment=labels.get("sentiment", "unknown") if labels else "unknown",
@@ -193,7 +193,7 @@ class MetricsCollector:
                 ).observe(value)
     
     def timer_start(self, timer_name: str) -> str:
-        """Запустить таймер."""
+        """Launch timer."""
         
         timer_id = f"{timer_name}_{time.time()}_{id(threading.current_thread())}"
         self._timers[timer_id] = [time.time()]
@@ -204,7 +204,7 @@ class MetricsCollector:
         timer_id: str,
         labels: Optional[Dict[str, str]] = None
     ) -> float:
-        """Завершить таймер и записать время."""
+        """Complete timer and record time."""
         
         if timer_id not in self._timers:
             self.logger.warning("Timer not found", timer_id=timer_id)
@@ -213,13 +213,13 @@ class MetricsCollector:
         start_time = self._timers[timer_id][0]
         duration = (time.time() - start_time) * 1000  # milliseconds
         
-        # Извлечение имени таймера
+        # Extraction name timer
         timer_name = timer_id.split("_")[0]
         
-        # Записать в гистограмму
+        # Record in histogram
         self.histogram(f"{timer_name}_duration_ms", duration, labels)
         
-        # Очистка
+        # Cleanup
         del self._timers[timer_id]
         
         return duration
@@ -231,7 +231,7 @@ class MetricsCollector:
         status_code: int,
         duration_ms: float
     ) -> None:
-        """Записать API запрос."""
+        """Record API request."""
         
         # Prometheus
         self.prom_api_requests.labels(
@@ -240,7 +240,7 @@ class MetricsCollector:
             status=str(status_code)
         ).inc()
         
-        # Внутренние метрики
+        # Inner metrics
         self.histogram(f"api_request_duration_ms", duration_ms, {
             "endpoint": endpoint,
             "method": method,
@@ -254,7 +254,7 @@ class MetricsCollector:
         confidence: float,
         processing_time_ms: float
     ) -> None:
-        """Записать предсказание модели."""
+        """Record prediction model."""
         
         # Prometheus
         self.prom_model_predictions.labels(
@@ -264,10 +264,10 @@ class MetricsCollector:
         
         self.prom_sentiment_confidence.labels(
             sentiment=sentiment,
-            platform="unknown"  # Можно добавить если нужно
+            platform="unknown"  # Possible add if needed
         ).observe(confidence)
         
-        # Внутренние метрики
+        # Inner metrics
         self.histogram("model_processing_time_ms", processing_time_ms, {
             "model": model_name,
             "sentiment": sentiment
@@ -278,7 +278,7 @@ class MetricsCollector:
         operation: str,  # get, set, delete, hit, miss
         result: str      # success, error
     ) -> None:
-        """Записать операцию с кэшем."""
+        """Record operation with cache."""
         
         self.prom_cache_operations.labels(
             operation=operation,
@@ -288,19 +288,19 @@ class MetricsCollector:
         self.increment(f"cache_{operation}_{result}")
     
     def get_metrics(self) -> Dict[str, Any]:
-        """Получить все метрики."""
+        """Get all metrics."""
         
         with self._lock:
             current_time = time.time()
             uptime = current_time - self._start_time
             
-            # Базовые счетчики
+            # Base counters
             counters = dict(self._counters)
             
-            # Gauge значения
+            # Gauge values
             gauges = dict(self._gauges)
             
-            # Статистика по гистограммам
+            # Statistics by histograms
             histograms = {}
             for name, values in self._histograms.items():
                 if values:
@@ -324,11 +324,11 @@ class MetricsCollector:
             }
     
     def get_prometheus_metrics(self) -> str:
-        """Получить метрики в формате Prometheus."""
+        """Get metrics in format Prometheus."""
         return generate_latest(self.registry).decode()
     
     def _percentile(self, values: deque, percentile: float) -> float:
-        """Вычислить перцентиль."""
+        """Compute percentile."""
         
         if not values:
             return 0.0
@@ -340,16 +340,16 @@ class MetricsCollector:
         return sorted_values[index]
     
     def cleanup_old_metrics(self) -> None:
-        """Очистка старых метрик."""
+        """Cleanup old metrics."""
         
         current_time = time.time()
         
         with self._lock:
-            # Очистка истории гистограмм (уже ограничена deque maxlen)
+            # Cleanup history histograms (already limited deque maxlen)
             
-            # Очистка старых таймеров
+            # Cleanup old timers
             expired_timers = []
-            cutoff_time = current_time - 300  # 5 минут
+            cutoff_time = current_time - 300  # 5 minutes
             
             for timer_id, timer_data in self._timers.items():
                 if timer_data[0] < cutoff_time:
@@ -366,7 +366,7 @@ class MetricsCollector:
                                expired_timers=len(expired_timers))
     
     def health_check(self) -> Dict[str, Any]:
-        """Проверка состояния сборщика метрик."""
+        """Validation state collector metrics."""
         
         try:
             metrics = self.get_metrics()
@@ -392,7 +392,7 @@ class MetricsCollector:
             }
     
     def export_metrics(self, format: str = "json") -> str:
-        """Экспорт метрик в различных форматах."""
+        """Export metrics in various formats."""
         
         if format.lower() == "json":
             metrics = self.get_metrics()
@@ -403,7 +403,7 @@ class MetricsCollector:
             raise ValueError(f"Unsupported format: {format}")
     
     def reset_metrics(self) -> None:
-        """Сброс всех метрик (осторожно!)."""
+        """Reset all metrics (caution!)."""
         
         with self._lock:
             self._counters.clear()
@@ -413,12 +413,12 @@ class MetricsCollector:
             
             self.logger.warning("All metrics have been reset")
 
-# Глобальный registry для всех компонентов
+# Global registry for all components
 GLOBAL_METRICS_REGISTRY: Dict[str, MetricsCollector] = {}
 GLOBAL_REGISTRY_LOCK = threading.Lock()
 
 def get_metrics_collector(component_name: str) -> MetricsCollector:
-    """Получить или создать сборщик метрик для компонента."""
+    """Get or create collector metrics for component."""
     
     with GLOBAL_REGISTRY_LOCK:
         if component_name not in GLOBAL_METRICS_REGISTRY:
@@ -427,7 +427,7 @@ def get_metrics_collector(component_name: str) -> MetricsCollector:
         return GLOBAL_METRICS_REGISTRY[component_name]
 
 def start_prometheus_server(port: int = 9090) -> None:
-    """Запуск Prometheus HTTP сервера."""
+    """Launch Prometheus HTTP server."""
     
     try:
         start_http_server(port)
@@ -437,7 +437,7 @@ def start_prometheus_server(port: int = 9090) -> None:
         raise
 
 def get_all_metrics() -> Dict[str, Dict[str, Any]]:
-    """Получить метрики всех компонентов."""
+    """Get metrics all components."""
     
     with GLOBAL_REGISTRY_LOCK:
         return {

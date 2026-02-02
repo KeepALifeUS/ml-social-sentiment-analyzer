@@ -1,8 +1,8 @@
 """
-Коннекторы к социальным платформам
+Connectors to social platforms
 
-Модуль содержит коннекторы для интеграции с различными социальными
-платформами с применением  enterprise-паттернов.
+Module contains connectors for integration with various social
+platforms with application  enterprise-patterns.
 """
 
 from .twitter_connector import TwitterConnector

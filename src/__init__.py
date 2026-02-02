@@ -1,17 +1,17 @@
 """
 Enterprise Social Media Sentiment Analyzer for Crypto Markets
 
-Этот модуль предоставляет полнофункциональную систему анализа настроений
-в социальных сетях для криптовалютных рынков with
-enterprise-паттернов.
+This module provides full-featured system analysis sentiments
+in social networks for cryptocurrency markets with
+enterprise-patterns.
 
-Основные компоненты:
-- Коннекторы к социальным платформам (Twitter, Reddit, Telegram и др.)
-- Система потоковой обработки данных в реальном времени
-- ML-модели для анализа настроений с поддержкой многих языков
-- Агрегация данных с различных источников
-- API для интеграции с торговыми системами
-- Система мониторинга и оповещений
+Main components:
+- Connectors to social platforms (Twitter, Reddit, Telegram and etc.)
+- System streaming processing data in real time
+- ML-model for analysis sentiments with support many languages
+- Aggregation data with various sources
+- API for integration with trading systems
+- System monitoring and alerts
 """
 
 from typing import Dict, Any
@@ -21,10 +21,10 @@ __version__ = "1.0.0"
 __author__ = "ML-Framework ML Team"
 __email__ = "ml-team@ml-framework.io"
 
-# Настройка логирования standard
+# Configuration logging standard
 logger = structlog.get_logger(__name__)
 
-# Экспорт основных компонентов
+# Export main components
 from .api.rest_api import SocialSentimentAPI
 from .analysis.realtime_analyzer import RealtimeSentimentAnalyzer
 from .streaming.twitter_stream import TwitterStreamProcessor
@@ -43,11 +43,11 @@ __all__ = [
 ]
 
 def get_version() -> str:
-    """Получить версию пакета."""
+    """Get version package."""
     return __version__
 
 def get_system_info() -> Dict[str, Any]:
-    """Получить информацию о системе."""
+    """Get information about system."""
     import sys
     import platform
     
@@ -61,7 +61,7 @@ def get_system_info() -> Dict[str, Any]:
 
 # Health Check
 def health_check() -> Dict[str, Any]:
-    """Проверка состояния системы."""
+    """Validation state system."""
     try:
         import torch
         import transformers

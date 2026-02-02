@@ -1,8 +1,8 @@
 """
-Twitter/X API v2 Connector с enterprise паттернами
+Twitter/X API v2 Connector with enterprise patterns
 
-Предоставляет надежное подключение к Twitter API с circuit breaker,
-rate limiting, retry logic и полным мониторингом.
+Provides reliable connection to Twitter API with circuit breaker,
+rate limiting, retry logic and full monitoring.
 """
 
 import asyncio
@@ -25,15 +25,15 @@ logger = structlog.get_logger(__name__)
 
 class TwitterConnector:
     """
-    Enterprise Twitter/X API v2 коннектор with enterprise patterns
+    Enterprise Twitter/X API v2 connector with enterprise patterns
     
     Features:
-    - Circuit breaker для защиты от каскадных сбоев
-    - Rate limiting с автоматическим backoff
-    - Retry logic с экспоненциальной задержкой
-    - Crypto-specific поиск и фильтрация
-    - Мониторинг и метрики в реальном времени
-    - Fault tolerance и graceful degradation
+    - Circuit breaker for protection from cascading failures
+    - Rate limiting with automatic backoff
+    - Retry logic with exponential delay
+    - Crypto-specific search and filtering
+    - Monitoring and metrics in real time
+    - Fault tolerance and graceful degradation
     """
     
     def __init__(self, config: Config):
@@ -41,7 +41,7 @@ class TwitterConnector:
         self.metrics = MetricsCollector("twitter_connector")
         self.logger = logger.bind(component="twitter_connector")
         
-        # Twitter API v2 клиент
+        # Twitter API v2 client
         self._client = tweepy.Client(
             bearer_token=config.twitter_bearer_token,
             consumer_key=config.twitter_api_key,
@@ -51,26 +51,26 @@ class TwitterConnector:
             wait_on_rate_limit=True
         )
         
-        # Circuit breaker для защиты API
+        # Circuit breaker for protection API
         self._circuit_breaker = CircuitBreaker(
             failure_threshold=5,
             recovery_timeout=60,
             expected_exception=Exception
         )
         
-        # Состояние подключения
+        # State connections
         self._connected = False
         self._last_request_time = 0
         self._request_count = 0
         
-        # Crypto-specific поисковые термы
+        # Crypto-specific search terms
         self.crypto_symbols = [
             "$BTC", "$ETH", "$ADA", "$SOL", "$DOT", "$LINK", "$UNI",
             "$MATIC", "$AVAX", "$ATOM", "$FTM", "$NEAR", "$ALGO",
             "Bitcoin", "Ethereum", "Cardano", "Solana", "Polkadot"
         ]
         
-        # Поисковые запросы для крипто
+        # Search requests for crypto
         self.crypto_queries = [
             "crypto OR cryptocurrency OR blockchain OR DeFi OR NFT",
             "Bitcoin OR BTC OR #Bitcoin OR #BTC",
@@ -85,9 +85,9 @@ class TwitterConnector:
         ]
     
     async def connect(self) -> bool:
-        """Установить подключение к Twitter API."""
+        """Install connection to Twitter API."""
         try:
-            # Проверка credentials
+            # Validation credentials
             me = await self._get_me()
             if me:
                 self._connected = True
@@ -107,7 +107,7 @@ class TwitterConnector:
     @CircuitBreaker(failure_threshold=3, recovery_timeout=30)
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     async def _get_me(self) -> Optional[Any]:
-        """Получить информацию о текущем пользователе."""
+        """Get information about current user."""
         try:
             return self._client.get_me()
         except Exception as e:
@@ -123,25 +123,25 @@ class TwitterConnector:
         crypto_focus: bool = True
     ) -> List[Dict[str, Any]]:
         """
-        Поиск последних твитов с crypto focus
+        Search recent tweets with crypto focus
         
         Args:
-            query: Поисковый запрос (None = автоматический crypto query)
-            max_results: Максимальное количество результатов
-            crypto_focus: Фокус на криптовалютах
+            query: Search request (None = automatic crypto query)
+            max_results: Maximum number results
+            crypto_focus: Focus on cryptocurrencies
         """
         
         if not self._connected:
             await self.connect()
         
         try:
-            # Автоматический выбор crypto query
+            # Automatic selection crypto query
             if not query and crypto_focus:
-                query = " OR ".join(self.crypto_queries[:3])  # Первые 3 запроса
+                query = " OR ".join(self.crypto_queries[:3])  # First 3 request
             elif not query:
                 query = "crypto OR bitcoin OR ethereum"
             
-            # Расширенные параметры поиска
+            # Extended parameters search
             tweet_fields = [
                 "created_at", "public_metrics", "context_annotations",
                 "conversation_id", "in_reply_to_user_id", "referenced_tweets",
@@ -170,12 +170,12 @@ class TwitterConnector:
             tweets = []
             users_dict = {}
             
-            # Создать словарь пользователей для быстрого поиска
+            # Create dictionary users for fast search
             if response.includes and "users" in response.includes:
                 users_dict = {user.id: user for user in response.includes["users"]}
             
             for tweet in response.data:
-                # Обогатить данные твита
+                # Enrich data tweet
                 author = users_dict.get(tweet.author_id, {})
                 
                 tweet_data = {
@@ -219,13 +219,13 @@ class TwitterConnector:
         max_results: int = 50,
         crypto_filter: bool = True
     ) -> List[Dict[str, Any]]:
-        """Получить твиты конкретного пользователя с crypto фильтром."""
+        """Get tweets specific user with crypto filter."""
         
         if not self._connected:
             await self.connect()
         
         try:
-            # Получить ID пользователя
+            # Get ID user
             user = self._client.get_user(username=username)
             if not user.data:
                 self.logger.warning("User not found", username=username)
@@ -233,7 +233,7 @@ class TwitterConnector:
             
             user_id = user.data.id
             
-            # Получить твиты пользователя
+            # Get tweets user
             response = self._client.get_users_tweets(
                 id=user_id,
                 max_results=min(max_results, 100),
@@ -246,7 +246,7 @@ class TwitterConnector:
             
             tweets = []
             for tweet in response.data:
-                # Фильтрация по crypto если включена
+                # Filtering by crypto if enabled
                 if crypto_filter and not self._is_crypto_related(tweet.text):
                     continue
                 
@@ -276,20 +276,20 @@ class TwitterConnector:
             raise
     
     async def get_trending_crypto_hashtags(self, woeid: int = 1) -> List[str]:
-        """Получить тренды связанные с криптовалютами."""
+        """Get trends connected with cryptocurrencies."""
         
         if not self._connected:
             await self.connect()
         
         try:
-            # Получить актуальные тренды (Global WOEID = 1)
+            # Get current trends (Global WOEID = 1)
             trends = self._client.get_place_trends(woeid)[0]["trends"]
             
             crypto_trends = []
             for trend in trends:
                 trend_name = trend["name"].lower()
                 
-                # Проверить на crypto-связанность
+                # Check on crypto-connectivity
                 if any(symbol.lower()[1:] in trend_name for symbol in self.crypto_symbols):
                     crypto_trends.append(trend["name"])
                 elif any(keyword in trend_name for keyword in [
@@ -306,7 +306,7 @@ class TwitterConnector:
             return []
     
     def _extract_crypto_symbols(self, text: str) -> List[str]:
-        """Извлечь упоминания криптовалют из текста."""
+        """Extract mentions cryptocurrencies from text."""
         symbols = []
         text_upper = text.upper()
         
@@ -314,22 +314,22 @@ class TwitterConnector:
             if symbol.upper() in text_upper:
                 symbols.append(symbol)
         
-        # Поиск дополнительных символов в формате $XXX
+        # Search additional symbols in format $XXX
         import re
         dollar_symbols = re.findall(r'\$[A-Z]{2,6}', text_upper)
         symbols.extend(dollar_symbols)
         
-        return list(set(symbols))  # Убрать дубликаты
+        return list(set(symbols))  # Remove duplicates
     
     def _is_crypto_related(self, text: str) -> bool:
-        """Проверить, связан ли текст с криптовалютами."""
+        """Check, connected whether text with cryptocurrencies."""
         text_lower = text.lower()
         
-        # Прямые упоминания символов
+        # Direct mentions symbols
         if any(symbol.lower() in text_lower for symbol in self.crypto_symbols):
             return True
         
-        # Crypto-термины
+        # Crypto-terms
         crypto_terms = [
             "crypto", "cryptocurrency", "bitcoin", "ethereum", "blockchain",
             "defi", "nft", "hodl", "moon", "whale", "satoshi", "altcoin",
@@ -339,12 +339,12 @@ class TwitterConnector:
         return any(term in text_lower for term in crypto_terms)
     
     async def health_check(self) -> Dict[str, Any]:
-        """Проверка состояния коннектора."""
+        """Validation state connector."""
         try:
             if not self._connected:
                 await self.connect()
             
-            # Тестовый запрос
+            # Test request
             me = await self._get_me()
             
             return {
@@ -364,6 +364,6 @@ class TwitterConnector:
             }
     
     async def disconnect(self) -> None:
-        """Закрыть подключение."""
+        """Close connection."""
         self._connected = False
         self.logger.info("Twitter connector disconnected")

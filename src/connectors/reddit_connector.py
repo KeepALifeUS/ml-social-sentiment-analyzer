@@ -1,8 +1,8 @@
 """
-Reddit API Connector с enterprise паттернами
+Reddit API Connector with enterprise patterns
 
-Интеграция с Reddit API через PRAW с полным мониторингом,
-circuit breaker и crypto-focused сбором данных.
+Integration with Reddit API through PRAW with full monitoring,
+circuit breaker and crypto-focused collection data.
 """
 
 import asyncio
@@ -23,14 +23,14 @@ logger = structlog.get_logger(__name__)
 
 class RedditConnector:
     """
-    Enterprise Reddit API коннектор with enterprise patterns
+    Enterprise Reddit API connector with enterprise patterns
     
     Features:
-    - PRAW integration с async wrapper
-    - Circuit breaker для API защиты
-    - Crypto subreddits мониторинг
+    - PRAW integration with async wrapper
+    - Circuit breaker for API protection
+    - Crypto subreddits monitoring
     - Sentiment-aware comment parsing
-    - Rate limiting и retry logic
+    - Rate limiting and retry logic
     - Hot/New/Rising posts tracking
     """
     
@@ -39,7 +39,7 @@ class RedditConnector:
         self.metrics = MetricsCollector("reddit_connector")
         self.logger = logger.bind(component="reddit_connector")
         
-        # Reddit API клиент
+        # Reddit API client
         self._client = praw.Reddit(
             client_id=config.reddit_client_id,
             client_secret=config.reddit_client_secret,
@@ -67,7 +67,7 @@ class RedditConnector:
             "binance", "coinbase", "kraken", "kucoin", "CryptoCurrencies"
         ]
         
-        # Crypto keywords для фильтрации
+        # Crypto keywords for filtering
         self.crypto_keywords = [
             "btc", "bitcoin", "eth", "ethereum", "crypto", "cryptocurrency",
             "blockchain", "defi", "nft", "altcoin", "hodl", "moon", "lambo",
@@ -77,9 +77,9 @@ class RedditConnector:
         ]
     
     async def connect(self) -> bool:
-        """Установить подключение к Reddit API."""
+        """Install connection to Reddit API."""
         try:
-            # Проверка подключения
+            # Validation connections
             user = self._client.user.me()
             if user:
                 self._connected = True
@@ -106,19 +106,19 @@ class RedditConnector:
         crypto_only: bool = True
     ) -> List[Dict[str, Any]]:
         """
-        Получить горячие посты из crypto subreddits
+        Get hot posts from crypto subreddits
         
         Args:
-            subreddits: Список subreddits (None = все crypto)
-            limit: Количество постов на subreddit
-            crypto_only: Фильтровать только crypto-контент
+            subreddits: List subreddits (None = all crypto)
+            limit: Number posts on subreddit
+            crypto_only: Filter only crypto-content
         """
         
         if not self._connected:
             await self.connect()
         
         if not subreddits:
-            subreddits = self.crypto_subreddits[:10]  # Топ-10 для производительности
+            subreddits = self.crypto_subreddits[:10]  # Top-10 for performance
         
         all_posts = []
         
@@ -129,11 +129,11 @@ class RedditConnector:
                     posts = list(subreddit.hot(limit=limit))
                     
                     for post in posts:
-                        # Фильтрация по crypto если включена
+                        # Filtering by crypto if enabled
                         if crypto_only and not self._is_crypto_related(post.title + " " + post.selftext):
                             continue
                         
-                        # Получить топ комментарии
+                        # Get top comments
                         post.comments.replace_more(limit=0)
                         top_comments = [
                             {
@@ -144,7 +144,7 @@ class RedditConnector:
                                 "author": str(comment.author) if comment.author else "[deleted]",
                                 "crypto_symbols": self._extract_crypto_symbols(comment.body)
                             }
-                            for comment in post.comments[:10]  # Топ-10 комментариев
+                            for comment in post.comments[:10]  # Top-10 comments
                             if hasattr(comment, 'body') and comment.body != "[removed]" and comment.body != "[deleted]"
                         ]
                         
@@ -199,13 +199,13 @@ class RedditConnector:
         limit: int = 50,
         time_window_hours: int = 24
     ) -> List[Dict[str, Any]]:
-        """Получить новые посты за определенный период."""
+        """Get new posts for specific period."""
         
         if not self._connected:
             await self.connect()
         
         if not subreddits:
-            subreddits = self.crypto_subreddits[:5]  # Топ-5 для новых постов
+            subreddits = self.crypto_subreddits[:5]  # Top-5 for new posts
         
         current_time = time.time()
         cutoff_time = current_time - (time_window_hours * 3600)
@@ -219,11 +219,11 @@ class RedditConnector:
                     posts = list(subreddit.new(limit=limit))
                     
                     for post in posts:
-                        # Фильтр по времени
+                        # Filter by time
                         if post.created_utc < cutoff_time:
                             continue
                         
-                        # Фильтр по crypto-контенту
+                        # Filter by crypto-content
                         if not self._is_crypto_related(post.title + " " + post.selftext):
                             continue
                         
@@ -256,7 +256,7 @@ class RedditConnector:
             raise
     
     async def get_user_posts(self, username: str, limit: int = 50) -> List[Dict[str, Any]]:
-        """Получить посты конкретного пользователя."""
+        """Get posts specific user."""
         
         if not self._connected:
             await self.connect()
@@ -296,7 +296,7 @@ class RedditConnector:
         time_filter: str = "week",
         limit: int = 100
     ) -> List[Dict[str, Any]]:
-        """Поиск постов по запросу в crypto subreddits."""
+        """Search posts by request in crypto subreddits."""
         
         if not self._connected:
             await self.connect()
@@ -333,7 +333,7 @@ class RedditConnector:
                                     subreddit=subreddit_name, error=str(e))
                     continue
             
-            # Сортировка по релевантности
+            # Sorting by relevance
             all_results.sort(key=lambda x: x["relevance_score"], reverse=True)
             
             self.logger.info("Search completed", query=query, results=len(all_results))
@@ -344,11 +344,11 @@ class RedditConnector:
             return []
     
     def _extract_crypto_symbols(self, text: str) -> List[str]:
-        """Извлечь упоминания криптовалют."""
+        """Extract mentions cryptocurrencies."""
         symbols = []
         text_upper = text.upper()
         
-        # Основные символы
+        # Main symbols
         crypto_symbols = [
             "BTC", "ETH", "ADA", "SOL", "DOT", "LINK", "UNI", "MATIC",
             "AVAX", "ATOM", "FTM", "NEAR", "ALGO", "XRP", "LTC", "BCH"
@@ -358,14 +358,14 @@ class RedditConnector:
             if symbol in text_upper or f"${symbol}" in text_upper:
                 symbols.append(f"${symbol}")
         
-        # Поиск дополнительных символов в формате $XXX
+        # Search additional symbols in format $XXX
         dollar_symbols = re.findall(r'\$[A-Z]{2,6}', text_upper)
         symbols.extend(dollar_symbols)
         
         return list(set(symbols))
     
     def _extract_sentiment_indicators(self, text: str) -> Dict[str, int]:
-        """Извлечь индикаторы настроения из текста."""
+        """Extract indicators sentiment from text."""
         text_lower = text.lower()
         
         bullish_terms = ["moon", "lambo", "diamond hands", "hodl", "bull", "pump", "rocket", "🚀"]
@@ -379,12 +379,12 @@ class RedditConnector:
         }
     
     def _is_crypto_related(self, text: str) -> bool:
-        """Проверить связанность с криптовалютами."""
+        """Check connectivity with cryptocurrencies."""
         text_lower = text.lower()
         return any(keyword in text_lower for keyword in self.crypto_keywords)
     
     def _calculate_relevance_score(self, post, query: str) -> float:
-        """Рассчитать релевантность поста к запросу."""
+        """Calculate relevance post to request."""
         title_score = post.title.lower().count(query.lower()) * 3
         text_score = post.selftext.lower().count(query.lower())
         engagement_score = (post.score + post.num_comments) / 100
@@ -392,7 +392,7 @@ class RedditConnector:
         return title_score + text_score + engagement_score
     
     async def health_check(self) -> Dict[str, Any]:
-        """Проверка состояния коннектора."""
+        """Validation state connector."""
         try:
             if not self._connected:
                 await self.connect()
@@ -415,6 +415,6 @@ class RedditConnector:
             }
     
     async def disconnect(self) -> None:
-        """Закрыть подключение."""
+        """Close connection."""
         self._connected = False
         self.logger.info("Reddit connector disconnected")

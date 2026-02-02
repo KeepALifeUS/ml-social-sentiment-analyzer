@@ -1,8 +1,8 @@
 """
-API модуль для системы анализа настроений
+API module for system analysis sentiments
 
-Содержит REST API, GraphQL API и WebSocket сервер для
-интеграции с внешними системами.
+Contains REST API, GraphQL API and WebSocket server for
+integration with external systems.
 """
 
 from .rest_api import SocialSentimentAPI
