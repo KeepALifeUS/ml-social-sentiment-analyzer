@@ -1,5 +1,5 @@
 """
-YouTube API Connector с Context7 Enterprise паттернами
+YouTube API Connector с enterprise паттернами
 
 Интеграция с YouTube Data API v3 для мониторинга crypto-каналов,
 комментариев и трендов с полной надежностью.
@@ -21,7 +21,7 @@ logger = structlog.get_logger(__name__)
 
 class YouTubeConnector:
     """
-    Enterprise YouTube API коннектор с Context7 паттернами
+    Enterprise YouTube API коннектор with enterprise patterns
     
     Features:
     - YouTube Data API v3 integration

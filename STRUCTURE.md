@@ -1,6 +1,6 @@
 # 📁 Project Structure - Social Media Sentiment Analyzer
 
-Полная структура созданного Enterprise Social Media Sentiment Analyzer с Context7 паттернами.
+Полная структура созданного Enterprise Social Media Sentiment Analyzer with enterprise patterns.
 
 ## 🗂️ Файловая структура
 
@@ -156,7 +156,7 @@ ml-social-sentiment-analyzer/
 
 ### 🏗️ Enterprise Architecture
 
-- **Context7 Patterns**: Cloud-native best practices
+- **enterprise patterns**: Cloud-native best practices
 - **Circuit Breakers**: Cascade failure protection
 - **Rate Limiting**: Automatic backoff strategies
 - **Fault Tolerance**: Graceful degradation
@@ -225,7 +225,7 @@ WebSocket /ws/realtime          # WebSocket connection
 - **Monitoring stack**: Prometheus, Grafana
 - **Development tools**: Jupyter, pgAdmin
 
-## 🎪 Context7 Enterprise Patterns
+## 🎪 enterprise patterns
 
 ### Reliability
 
@@ -386,4 +386,4 @@ async for sentiment in stream.stream_crypto_sentiment():
 
 ---
 
-**✨ Создано с Context7 Enterprise паттернами для максимальной надежности и производительности**
+**✨ Создано с enterprise паттернами для максимальной надежности и производительности**

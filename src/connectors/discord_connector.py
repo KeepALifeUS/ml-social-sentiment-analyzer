@@ -1,5 +1,5 @@
 """
-Discord Bot Connector с Context7 Enterprise паттернами
+Discord Bot Connector с enterprise паттернами
 
 Интеграция с Discord API через discord.py для мониторинга
 crypto-серверов и каналов с enterprise-grade функциональностью.
@@ -23,7 +23,7 @@ logger = structlog.get_logger(__name__)
 
 class DiscordConnector:
     """
-    Enterprise Discord API коннектор с Context7 паттернами
+    Enterprise Discord API коннектор with enterprise patterns
     
     Features:
     - Discord.py bot integration

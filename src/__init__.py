@@ -2,7 +2,7 @@
 Enterprise Social Media Sentiment Analyzer for Crypto Markets
 
 Этот модуль предоставляет полнофункциональную систему анализа настроений
-в социальных сетях для криптовалютных рынков с использованием Context7
+в социальных сетях для криптовалютных рынков with
 enterprise-паттернов.
 
 Основные компоненты:
@@ -21,7 +21,7 @@ __version__ = "1.0.0"
 __author__ = "ML-Framework ML Team"
 __email__ = "ml-team@ml-framework.io"
 
-# Настройка логирования Context7-style
+# Настройка логирования standard
 logger = structlog.get_logger(__name__)
 
 # Экспорт основных компонентов
@@ -59,7 +59,7 @@ def get_system_info() -> Dict[str, Any]:
         "machine": platform.machine(),
     }
 
-# Context7 Health Check
+# Health Check
 def health_check() -> Dict[str, Any]:
     """Проверка состояния системы."""
     try:

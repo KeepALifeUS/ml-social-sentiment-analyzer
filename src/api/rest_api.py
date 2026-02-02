@@ -1,7 +1,7 @@
 """
 REST API для системы анализа настроений
 
-FastAPI-based REST API с Context7 enterprise паттернами для
+FastAPI-based REST API with enterprise patterns для
 интеграции с торговыми системами и внешними приложениями.
 """
 

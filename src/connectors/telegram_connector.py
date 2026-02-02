@@ -1,5 +1,5 @@
 """
-Telegram API Connector с Context7 Enterprise паттернами
+Telegram API Connector с enterprise паттернами
 
 Интеграция с Telegram API через Telethon для мониторинга
 crypto-каналов и групп с enterprise-grade надежностью.
@@ -24,7 +24,7 @@ logger = structlog.get_logger(__name__)
 
 class TelegramConnector:
     """
-    Enterprise Telegram API коннектор с Context7 паттернами
+    Enterprise Telegram API коннектор with enterprise patterns
     
     Features:
     - Telethon integration с async поддержкой

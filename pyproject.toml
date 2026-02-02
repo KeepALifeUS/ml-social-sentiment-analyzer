@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ctb3-ml-social-sentiment-analyzer"
 version = "1.0.0"
-description = "Enterprise Social Media Sentiment Analyzer for Crypto Markets with Context7 Patterns"
+description = "Enterprise Social Media Sentiment Analyzer for Crypto Markets with enterprise patterns"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
@@ -27,7 +27,7 @@ classifiers = [
 ]
 keywords = [
     "crypto", "sentiment", "social-media", "nlp", "machine-learning", 
-    "trading", "context7", "enterprise", "real-time", "streaming"
+    "trading", "ml-framework", "enterprise", "real-time", "streaming"
 ]
 dependencies = [
     "transformers>=4.36.0",

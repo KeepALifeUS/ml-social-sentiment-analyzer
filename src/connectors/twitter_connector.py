@@ -1,5 +1,5 @@
 """
-Twitter/X API v2 Connector с Context7 Enterprise паттернами
+Twitter/X API v2 Connector с enterprise паттернами
 
 Предоставляет надежное подключение к Twitter API с circuit breaker,
 rate limiting, retry logic и полным мониторингом.
@@ -25,7 +25,7 @@ logger = structlog.get_logger(__name__)
 
 class TwitterConnector:
     """
-    Enterprise Twitter/X API v2 коннектор с Context7 паттернами
+    Enterprise Twitter/X API v2 коннектор with enterprise patterns
     
     Features:
     - Circuit breaker для защиты от каскадных сбоев

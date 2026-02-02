@@ -2,7 +2,7 @@
 Модуль мониторинга и метрик
 
 Компоненты для сбора метрик, мониторинга производительности
-и создания дашбордов с Context7 enterprise паттернами.
+и создания дашбордов with enterprise patterns.
 """
 
 from .metrics_collector import MetricsCollector

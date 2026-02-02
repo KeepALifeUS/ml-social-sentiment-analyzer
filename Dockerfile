@@ -1,5 +1,5 @@
 # Multi-stage Docker build для Social Media Sentiment Analyzer
-# Context7 enterprise-grade containerization
+#  enterprise-grade containerization
 
 FROM python:3.11-slim as base
 

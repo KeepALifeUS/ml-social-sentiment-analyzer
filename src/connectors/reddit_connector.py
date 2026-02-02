@@ -1,5 +1,5 @@
 """
-Reddit API Connector с Context7 Enterprise паттернами
+Reddit API Connector с enterprise паттернами
 
 Интеграция с Reddit API через PRAW с полным мониторингом,
 circuit breaker и crypto-focused сбором данных.
@@ -23,7 +23,7 @@ logger = structlog.get_logger(__name__)
 
 class RedditConnector:
     """
-    Enterprise Reddit API коннектор с Context7 паттернами
+    Enterprise Reddit API коннектор with enterprise patterns
     
     Features:
     - PRAW integration с async wrapper

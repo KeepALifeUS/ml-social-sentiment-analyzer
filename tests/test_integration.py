@@ -1,7 +1,7 @@
 """
 Integration тесты для Social Media Sentiment Analyzer
 
-Тестирование полной функциональности системы с Context7 паттернами.
+Тестирование полной функциональности системы with enterprise patterns.
 """
 
 import pytest
@@ -60,7 +60,7 @@ def sample_tweets():
     ]
 
 class TestRealtimeAnalyzer:
-    """Тесты для анализатора реального времени."""
+    """Tests for анализатора реального времени."""
     
     @pytest.mark.asyncio
     async def test_analyzer_initialization(self, test_config):
@@ -140,7 +140,7 @@ class TestRealtimeAnalyzer:
                 assert results[2].sentiment == "neutral"   # Neutral tweet
 
 class TestTwitterConnector:
-    """Тесты для Twitter коннектора."""
+    """Tests for Twitter коннектора."""
     
     @pytest.mark.asyncio
     async def test_twitter_connection(self, test_config):
@@ -198,7 +198,7 @@ class TestTwitterConnector:
             assert tweets[0]["platform"] == "twitter"
 
 class TestAPIIntegration:
-    """Тесты для REST API."""
+    """Tests for REST API."""
     
     @pytest.fixture
     def api_client(self):

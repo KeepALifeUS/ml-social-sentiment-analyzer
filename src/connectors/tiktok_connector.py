@@ -1,5 +1,5 @@
 """
-TikTok Data Connector с Context7 Enterprise паттернами
+TikTok Data Connector с enterprise паттернами
 
 Интеграция для сбора TikTok контента связанного с криптовалютами
 через TikTok API и web scraping с максимальной надежностью.
@@ -24,7 +24,7 @@ logger = structlog.get_logger(__name__)
 
 class TikTokConnector:
     """
-    Enterprise TikTok коннектор с Context7 паттернами
+    Enterprise TikTok коннектор with enterprise patterns
     
     Features:
     - TikTok API integration (если доступен)

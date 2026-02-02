@@ -1,7 +1,7 @@
 """
 Конфигурация системы анализа настроений
 
-Context7 enterprise-grade конфигурация с поддержкой различных
+ enterprise-grade конфигурация с поддержкой различных
 окружений и валидацией параметров.
 """
 
@@ -143,7 +143,7 @@ class SecurityConfig:
 
 class Config:
     """
-    Главный класс конфигурации с Context7 enterprise паттернами
+    Главный класс конфигурации with enterprise patterns
     
     Features:
     - Environment-based конфигурация

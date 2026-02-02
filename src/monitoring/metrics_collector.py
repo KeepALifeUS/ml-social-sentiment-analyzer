@@ -1,5 +1,5 @@
 """
-Сборщик метрик с Context7 Enterprise паттернами
+Сборщик метрик с enterprise паттернами
 
 Высокопроизводительный сбор метрик для мониторинга работы
 системы анализа настроений в реальном времени.
@@ -27,7 +27,7 @@ class MetricValue:
 
 class MetricsCollector:
     """
-    Enterprise сборщик метрик с Context7 паттернами
+    Enterprise сборщик метрик with enterprise patterns
     
     Features:
     - Prometheus интеграция
